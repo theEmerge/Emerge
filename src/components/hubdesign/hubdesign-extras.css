@@ -1,0 +1,78 @@
+/* ==========================================================================
+   Additions on top of the Figma design (hubdesign.css). Only things the
+   mock did not need once it is wired to real data: the colour bridge for
+   Emerge's existing hub sub-pages, form controls, mobile tab bar, menus.
+   ========================================================================== */
+
+/* ---- Bridge: old Emerge variables resolve to the Figma theme tokens, so every
+   existing hub page (jobs, network, repos, servers...) picks up the new look. ---- */
+.hd-app { --text: var(--ink); --text-dim: var(--muted); --border: var(--line); --surface-2: var(--surface-soft); --blue: var(--accent); --blue-deep: var(--accent); --cyan: var(--accent); }
+.hd-theme-professional { --accent-rgb: 52, 120, 246; }
+.hd-theme-game { --accent-rgb: 168, 102, 255; }
+.hd-theme-developer { --accent-rgb: 103, 232, 142; }
+.hd-app .hx-btn { border-radius: 11px; }
+.hd-app .hx-btn.primary { color: var(--accent-ink); font-weight: 800; }
+.hd-app .hx-card, .hd-app .hx-ticket { background: var(--surface); box-shadow: var(--shadow); }
+.hd-app .hx-input, .hd-app .hx-textarea, .hd-app .hx-select { background: var(--surface-strong); }
+.hd-app .hx-page, .hd-app .hx-page.wide { max-width: 100%; padding: 0 0 8px; }
+.hd-app a.hx-title-link { color: var(--ink); }
+.hd-app .ap-loading { padding: 24px 0; color: var(--muted); font-size: 13px; }
+
+/* Real-data tweaks to the Figma components */
+.hd-profile-progress { background: conic-gradient(var(--accent) calc(var(--p, 82) * 1%), var(--surface-soft) 0); }
+.hd-app .hd-avatar-fallback { display: grid; font-style: normal; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 800; letter-spacing: -.02em; }
+.hd-avatar-small.hd-avatar-fallback { font-size: 11px; }
+.hd-feed-copy { white-space: pre-wrap; overflow-wrap: anywhere; }
+.hd-brand { color: inherit; text-decoration: none; }
+a.hd-hub-option, a.hd-nav-item { text-decoration: none; }
+.hd-hub-option, .hd-nav-item { position: relative; }
+.hd-nav-item > span:not(.hd-unread-dot):not(.hd-nav-count) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hd-rail-note { margin-top: 10px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.hd-link-btn { display: flex; align-items: center; gap: 6px; border: 0; background: transparent; color: var(--muted); font-size: 11px; font-weight: 700; text-decoration: none; }
+.hd-link-btn:hover { color: var(--ink); }
+.hd-row-actions { display: flex; align-items: center; gap: 14px; }
+.hd-person-row > a, .hd-feed-author > a { color: inherit; text-decoration: none; }
+.hd-person-row .hd-person-main { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10px; }
+.hd-person-row .hd-person-main > div { display: flex; min-width: 0; flex: 1; flex-direction: column; }
+.hd-skeleton { min-height: 74px; animation: hd-skel 1.2s ease-in-out infinite; }
+@keyframes hd-skel { 50% { opacity: .55; } }
+.hd-more-btn { cursor: pointer; }
+
+/* Segmented control (Connections / Everyone) */
+.hd-seg { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.hd-seg button { border: 0; border-radius: 7px; background: transparent; padding: 5px 10px; color: var(--muted); font-size: 11px; font-weight: 700; }
+.hd-seg button.hd-on { background: var(--accent); color: var(--accent-ink); }
+
+/* Form controls inside rail cards */
+.hd-form { display: flex; flex-direction: column; gap: 11px; }
+.hd-field { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.hd-input { width: 100%; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-strong); padding: 10px; color: var(--ink); font-size: 12px; outline: 0; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.hd-input:focus { border-color: var(--accent); }
+.hd-check { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.hd-btn-row { display: flex; gap: 8px; }
+.hd-btn { flex: 1; border: 1px solid var(--line); border-radius: 9px; background: transparent; padding: 9px; color: var(--ink); font-size: 11px; font-weight: 700; transition: transform .18s ease, filter .18s ease; }
+.hd-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.hd-btn-solid { border-color: transparent; background: var(--accent); color: var(--accent-ink); font-weight: 800; }
+.hd-err { color: #ff7a66; font-size: 11px; }
+.hd-theme-professional .hd-err { color: #d6402b; }
+.hd-inline-card { margin-bottom: 14px; }
+
+/* Profile menu */
+.hd-profile-row { position: relative; }
+.hd-menu { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 40; min-width: 170px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-strong); padding: 6px; box-shadow: var(--shadow); }
+.hd-menu a, .hd-menu button { display: flex; width: 100%; align-items: center; gap: 9px; border: 0; border-radius: 8px; background: transparent; padding: 9px 10px; color: var(--ink); font-size: 12px; font-weight: 600; text-align: left; text-decoration: none; }
+.hd-menu a:hover, .hd-menu button:hover { background: var(--surface-soft); }
+
+/* Mobile tab bar: the Figma mock had none, but Emerge's hubs have several pages */
+.hd-bottombar { display: none; }
+@media (max-width: 880px) {
+  .hd-bottombar { position: fixed; z-index: 30; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-around; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 92%, transparent); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); backdrop-filter: blur(18px); }
+  .hd-bottombar a { position: relative; display: grid; width: 48px; height: 44px; place-items: center; border-radius: 12px; color: var(--muted); text-decoration: none; }
+  .hd-bottombar a.hd-active { background: var(--accent); color: var(--accent-ink); }
+  .hd-bottombar .hd-unread-dot { position: absolute; top: 8px; right: 10px; margin: 0; }
+  .hd-app-main { padding-bottom: 96px; }
+  .hd-mobile-hubs a { display: grid; width: 35px; height: 35px; border-radius: 9px; color: var(--muted); place-items: center; text-decoration: none; }
+  .hd-mobile-hubs a.hd-active { background: var(--accent); color: var(--accent-ink); }
+}
+
+.hd-dev-layout #all-repos { margin-top: 30px; }

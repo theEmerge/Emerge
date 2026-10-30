@@ -1,0 +1,939 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  handle       String   @unique
+  name         String
+  passwordHash String
+  avatarUrl    String?
+  bannerUrl    String?
+  bio          String?
+  createdAt    DateTime @default(now())
+  emailVerifiedAt DateTime?
+
+  blocksMade     Block[]     @relation("BlockBlocker")
+  blocksReceived Block[]     @relation("BlockBlocked")
+  reportsMade    Report[]    @relation("ReportReporter")
+  reportsAgainst Report[]    @relation("ReportTargetUser")
+  authTokens     AuthToken[]
+  emailOtps      EmailOtp[]
+
+  posts     Post[]
+  rolls     Roll[]
+  likes     Like[]
+  helpfulMarks HelpfulMark[]
+  comments  Comment[]
+  communityMemberships CommunityMembership[]
+  reshares  Reshare[]
+  stories   Story[]
+  storyViews StoryView[]
+  conversations ConversationParticipant[]
+  messages  Message[]
+  messageReactions MessageReaction[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationActor")
+  postTags               PostTag[]
+  saved                  Saved[]
+  closeFriendsOf         CloseFriend[] @relation("CloseFriendOwner")
+  closeFriendOf          CloseFriend[] @relation("CloseFriendMember")
+
+  following Follow[] @relation("following")
+  followers Follow[] @relation("followedBy")
+
+  // Hubs: Connection, Game, Developer
+  proProfile          ProProfile?
+  proExperiences      ProExperience[]
+  connRequested       ProConnection[]    @relation("ConnRequester")
+  connReceived        ProConnection[]    @relation("ConnAddressee")
+  proPosts            ProPost[]
+  eventsHosted        Event[]
+  eventRsvps          EventRsvp[]
+  companiesOwned      Company[]
+  jobsPosted          Job[]
+  jobApplications     JobApplication[]
+  endorsementsGot     ProEndorsement[]   @relation("EndorseTarget")
+  endorsementsGiven   ProEndorsement[]   @relation("EndorseBy")
+  recsGot             ProRecommendation[] @relation("RecTarget")
+  recsGiven           ProRecommendation[] @relation("RecBy")
+  gameServersOwned    GameServer[]
+  serverMemberships   ServerMember[]
+  channelMessages     ChannelMessage[]
+  gamePresence        GamePresence?
+  lfgPosts            LfgPost[]
+  lfgJoins            LfgPlayer[]
+  repos               Repo[]
+  repoCollabs         RepoCollaborator[]
+  commits             Commit[]
+  pullRequests        PullRequest[]
+  issues              Issue[]
+  devComments         DevComment[]
+  releases            Release[]
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  follower    User     @relation("following", fields: [followerId], references: [id])
+  followerId  String
+  following   User     @relation("followedBy", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+// One Roll per user per calendar day - now just a grouping for the
+// contact-sheet archive view, NOT an enforced cap. The 24-frame daily
+// limit was retired: maxFrames is kept only so the archive UI still has a
+// number to render against, but nothing in the API ever blocks a post
+// because of it anymore (see src/lib/rolls.ts - claimNextFrame no longer
+// throws ROLL_FULL).
+model Roll {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  date        DateTime // truncated to UTC midnight
+  framesUsed  Int      @default(0)
+  maxFrames   Int      @default(24)
+  createdAt   DateTime @default(now())
+  posts       Post[]
+
+  @@unique([userId, date])
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  text        String?
+  imageUrl    String?
+  frameNumber Int?      // position within that day's roll, if a photo post on your roll
+  roll        Roll?     @relation(fields: [rollId], references: [id])
+  rollId      String?
+
+  // If this post belongs to a community instead of (or in addition to
+  // context on) your personal roll, communityId is set and no frame is
+  // consumed - communities and rolls are separate containers with
+  // separate rules. A post always belongs to exactly one context: either
+  // a roll frame (rollId set) or a community (communityId set), or neither
+  // (a plain text post to your followers).
+  community   Community? @relation(fields: [communityId], references: [id])
+  communityId String?
+
+  // Reels are vertical videos - they reuse the same Post row (and all of
+  // its likes/comments/reshares) rather than a separate model, they just
+  // carry a videoUrl and are excluded from the main chronological feed
+  // query in favor of their own /api/reels feed.
+  isReel      Boolean   @default(false)
+  videoUrl    String?
+
+  // Optional place: a free-text label ("Lisbon, Portugal") and/or the
+  // coordinates the author chose to attach from their device.
+  location    String?
+
+  createdAt   DateTime  @default(now())
+
+  likes        Like[]
+  helpfulMarks HelpfulMark[]
+  comments     Comment[]
+  reshares     Reshare[]
+  notifications Notification[]
+  tags          PostTag[]
+  images        PostImage[]
+  savedBy       Saved[]
+
+  @@index([createdAt])
+  @@index([communityId, createdAt])
+  @@index([isReel, createdAt])
+  @@index([userId, createdAt])
+}
+
+// A carousel slide. imageUrl on Post itself stays as the first/cover
+// image for back-compat with every post created before carousels
+// existed - new multi-photo posts additionally get one PostImage row
+// per slide (including the first), ordered by `position`.
+model PostImage {
+  id       String @id @default(cuid())
+  post     Post   @relation(fields: [postId], references: [id])
+  postId   String
+  url      String
+  position Int
+
+  @@index([postId, position])
+}
+
+// A story is visible for 24h from creation (expiresAt), image-only for
+// now. Queried by "not yet expired", never by a cron cleanup job - an
+// expired story just stops showing up, same "no cron needed" pattern as
+// Roll's midnight rollover.
+model Story {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  imageUrl  String?
+  videoUrl  String?
+  // EVERYONE (default) shows to every follower/viewer, same as before.
+  // CLOSE_FRIENDS restricts visibility to the poster's CloseFriend list
+  // (and the poster themselves) - the green-ring story audience feature.
+  audience  StoryAudience @default(EVERYONE)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  views     StoryView[]
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+}
+
+enum StoryAudience {
+  EVERYONE
+  CLOSE_FRIENDS
+}
+
+model StoryView {
+  id        String   @id @default(cuid())
+  story     Story    @relation(fields: [storyId], references: [id])
+  storyId   String
+  viewer    User     @relation(fields: [viewerId], references: [id])
+  viewerId  String
+  viewedAt  DateTime @default(now())
+
+  @@unique([storyId, viewerId])
+}
+
+// Direct messages. Kept deliberately simple - two-or-more participants
+// per conversation via ConversationParticipant, messages polled by the
+// client rather than pushed over a socket (no persistent-connection
+// infra on serverless/Netlify). lastReadAt per participant drives the
+// unread indicator without a separate read-receipts table.
+model Conversation {
+  id           String   @id @default(cuid())
+  isGroup      Boolean  @default(false)
+  name         String?
+  // Each hub has its own inbox: a thread belongs to exactly one hub.
+  hub          String   @default("social")
+  createdAt    DateTime @default(now())
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([hub])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  lastReadAt     DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  sender         User         @relation(fields: [senderId], references: [id])
+  senderId       String
+  text           String
+  gifUrl         String?
+  createdAt      DateTime     @default(now())
+
+  // Instagram/WhatsApp-style quoted reply - points at another message in
+  // the same conversation. Nullable, no cascade delete: if the original
+  // message is ever removed the reply just loses its quote, it isn't
+  // deleted itself.
+  replyTo        Message?     @relation("MessageReplies", fields: [replyToId], references: [id])
+  replyToId      String?
+  replies        Message[]    @relation("MessageReplies")
+
+  reactions      MessageReaction[]
+
+  @@index([conversationId, createdAt])
+  @@index([replyToId])
+}
+
+// One reaction per user per message (tapping a different emoji replaces
+// it, tapping the same one clears it) - matches Instagram DMs, which
+// don't support multiple simultaneous reactions from the same person.
+model MessageReaction {
+  id        String   @id @default(cuid())
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+  RESHARE
+  TAG
+  CONNECTION_REQUEST
+  CONNECTION_ACCEPTED
+  JOB_APPLICATION
+  PULL_REQUEST
+  ISSUE
+}
+
+// A user tagged in a post/reel - shown as a "with @a, @b" line under the
+// post and notifies each tagged person once (see notify() calls in
+// src/app/api/posts/route.ts). x/y are optional normalized (0-1)
+// coordinates for an Instagram-style pin dropped directly on a photo -
+// null for the plain "with @a" list-only tags that predate this, and for
+// anyone tagged without placing a pin. imageIndex points at which
+// PostImage slide the pin belongs to (0 for a single-image post).
+model PostTag {
+  id         String   @id @default(cuid())
+  post       Post     @relation(fields: [postId], references: [id])
+  postId     String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  x          Float?
+  y          Float?
+  imageIndex Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+// A saved/bookmarked post - Instagram's private "Saved" collection.
+// Visible only to the saver, never shown as a public count or activity.
+model Saved {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([userId, createdAt])
+}
+
+// owner's close friends list - a private, one-directional allowlist (like
+// Instagram's). Only ownerId can see or manage their own list; friendId
+// being in it doesn't imply anything back the other way.
+model CloseFriend {
+  id        String   @id @default(cuid())
+  owner     User     @relation("CloseFriendOwner", fields: [ownerId], references: [id])
+  ownerId   String
+  friend    User     @relation("CloseFriendMember", fields: [friendId], references: [id])
+  friendId  String
+  createdAt DateTime @default(now())
+
+  @@unique([ownerId, friendId])
+  @@index([ownerId])
+  @@index([friendId])
+}
+
+// One row per event, not aggregated - the notification feed groups
+// nothing server-side (same "no algorithm" philosophy as the rest of the
+// app: show what happened, in order). recipientId is who sees it,
+// actorId is who caused it; post is optional since a FOLLOW notification
+// has no associated post.
+model Notification {
+  id          String            @id @default(cuid())
+  recipient   User              @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  recipientId String
+  actor       User              @relation("NotificationActor", fields: [actorId], references: [id])
+  actorId     String
+  type        NotificationType
+  // Which hub this belongs to (social | connection | game | developer).
+  hub         String            @default("social")
+  post        Post?             @relation(fields: [postId], references: [id])
+  postId      String?
+  read        Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+
+  @@index([recipientId, createdAt])
+  @@index([recipientId, read])
+  @@index([recipientId, hub, createdAt])
+}
+
+// A reshare is its own timeline event ("X reshared this"), not a copy of
+// the post. The feed query unions original posts with reshares and sorts
+// the merged set by whichever timestamp is relevant (the post's createdAt
+// for originals, the reshare's createdAt for reshares) - see
+// GET /api/feed. Resharing your own post is blocked at the API layer.
+model Reshare {
+  id           String   @id @default(cuid())
+  post         Post     @relation(fields: [postId], references: [id])
+  postId       String
+  resharedBy   User     @relation(fields: [resharedById], references: [id])
+  resharedById String
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  @@unique([postId, resharedById])
+  @@index([resharedById, createdAt])
+}
+
+// A topic-based space, separate from the personal roll system. Its feed is
+// just as chronological as the main feed - joining doesn't change ranking,
+// it changes which posts you see at all.
+model Community {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  posts   Post[]
+  members CommunityMembership[]
+}
+
+model CommunityMembership {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  community   Community @relation(fields: [communityId], references: [id])
+  communityId String
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, communityId])
+}
+
+// Helpful marks are the community-layer equivalent of a like, but they are
+// NOT hidden - they're a visible, community-scoped reputation signal
+// ("recognition") rather than a personal-post vanity metric. Crucially,
+// they never affect post ordering anywhere - see GET /api/communities/[id]
+// and GET /api/feed, both of which sort by createdAt only.
+model HelpfulMark {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+// Likes are counted and now included directly in the feed payload
+// (likeCount) - the old "hidden until revealed" behavior was retired in
+// favor of Instagram-style visible counts. GET /api/posts/[id]/likes is
+// kept only for backward compatibility with any cached clients.
+model Like {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@index([postId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([postId, createdAt])
+}
+
+
+// ---- Safety: block + report ------------------------------------------------
+
+// blocker has blocked blocked. Hides both users from each other everywhere
+// and stops DMs/follows/comments between them (see src/lib/blocks.ts).
+model Block {
+  id        String   @id @default(cuid())
+  blocker   User     @relation("BlockBlocker", fields: [blockerId], references: [id])
+  blockerId String
+  blocked   User     @relation("BlockBlocked", fields: [blockedId], references: [id])
+  blockedId String
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+enum ReportTargetType {
+  POST
+  COMMENT
+  MESSAGE
+  USER
+}
+
+enum ReportStatus {
+  OPEN
+  REMOVED
+  DISMISSED
+}
+
+// A user report. `snapshot` keeps the reported text so the team can still
+// review it if the author deletes it (and so a reported DM is readable).
+model Report {
+  id           String           @id @default(cuid())
+  reporter     User             @relation("ReportReporter", fields: [reporterId], references: [id])
+  reporterId   String
+  targetType   ReportTargetType
+  targetId     String
+  targetUser   User?            @relation("ReportTargetUser", fields: [targetUserId], references: [id])
+  targetUserId String?
+  reason       String
+  note         String?
+  snapshot     String?
+  status       ReportStatus     @default(OPEN)
+  createdAt    DateTime         @default(now())
+  reviewedAt   DateTime?
+
+  @@unique([reporterId, targetType, targetId])
+  @@index([status, createdAt])
+}
+
+// ---- One-time email tokens (password reset + email verification) ----------
+
+enum AuthTokenType {
+  PASSWORD_RESET
+  EMAIL_VERIFY
+}
+
+// Only the SHA-256 hash of the token is stored, never the token itself.
+model AuthToken {
+  id        String        @id @default(cuid())
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  @@index([userId, type])
+}
+
+// 6-digit email verification codes. Only an HMAC of the code is stored.
+// A code expires after 10 minutes and locks after 5 wrong attempts.
+model EmailOtp {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  codeHash  String
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+}
+
+
+// =====================================================================
+// Connection Hub - professional network
+// =====================================================================
+
+model ProProfile {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline     String?
+  about        String?
+  location     String?
+  skills       String[]
+  portfolioUrl String?
+  openToWork   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// kind is "work" or "education".
+model ProExperience {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  kind        String
+  title       String
+  org         String
+  startYear   Int
+  endYear     Int?
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+// status is "PENDING" (requester waiting on addressee) or "ACCEPTED".
+model ProConnection {
+  id          String   @id @default(cuid())
+  requester   User     @relation("ConnRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  requesterId String
+  addressee   User     @relation("ConnAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  addresseeId String
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId])
+}
+
+// Professional Hub events (meetups, webinars, workshops).
+model Event {
+  id          String   @id @default(cuid())
+  host        User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  hostId      String
+  title       String
+  description String   @default("")
+  location    String?
+  isOnline    Boolean  @default(false)
+  link        String?
+  startsAt    DateTime
+  endsAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  rsvps EventRsvp[]
+
+  @@index([startsAt])
+  @@index([hostId])
+}
+
+model EventRsvp {
+  id        String   @id @default(cuid())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
+  @@index([userId])
+}
+
+model ProPost {
+  id        String   @id @default(cuid())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([authorId, createdAt])
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  about     String?
+  website   String?
+  location  String?
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  jobs Job[]
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  poster      User     @relation(fields: [posterId], references: [id], onDelete: Cascade)
+  posterId    String
+  company     Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  companyId   String?
+  companyName String
+  title       String
+  location    String?
+  jobType     String   @default("Full-time")
+  description String
+  open        Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  applications JobApplication[]
+
+  @@index([createdAt])
+  @@index([posterId])
+}
+
+model JobApplication {
+  id        String   @id @default(cuid())
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId     String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([jobId, userId])
+}
+
+model ProEndorsement {
+  id         String   @id @default(cuid())
+  target     User     @relation("EndorseTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  targetId   String
+  endorser   User     @relation("EndorseBy", fields: [endorserId], references: [id], onDelete: Cascade)
+  endorserId String
+  skill      String
+  createdAt  DateTime @default(now())
+
+  @@unique([targetId, endorserId, skill])
+}
+
+model ProRecommendation {
+  id        String   @id @default(cuid())
+  target    User     @relation("RecTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  targetId  String
+  author    User     @relation("RecBy", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@unique([targetId, authorId])
+}
+
+// =====================================================================
+// Game Hub - servers, channels, presence, party finder
+// =====================================================================
+
+model GameServer {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  inviteCode  String   @unique
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  members  ServerMember[]
+  channels Channel[]
+}
+
+// role is "owner", "admin" or "member".
+model ServerMember {
+  id        String     @id @default(cuid())
+  server    GameServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  serverId  String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  role      String     @default("member")
+  createdAt DateTime   @default(now())
+
+  @@unique([serverId, userId])
+  @@index([userId])
+}
+
+model Channel {
+  id        String     @id @default(cuid())
+  server    GameServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  serverId  String
+  name      String
+  topic     String?
+  createdAt DateTime   @default(now())
+
+  messages ChannelMessage[]
+
+  @@unique([serverId, name])
+}
+
+model ChannelMessage {
+  id        String   @id @default(cuid())
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  channelId String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([channelId, createdAt])
+}
+
+model GamePresence {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game      String
+  updatedAt DateTime @updatedAt
+}
+
+model LfgPost {
+  id        String   @id @default(cuid())
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  game      String
+  title     String
+  platform  String?
+  slots     Int      @default(4)
+  open      Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  players LfgPlayer[]
+
+  @@index([createdAt])
+}
+
+model LfgPlayer {
+  id        String   @id @default(cuid())
+  lfg       LfgPost  @relation(fields: [lfgId], references: [id], onDelete: Cascade)
+  lfgId     String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([lfgId, userId])
+}
+
+// =====================================================================
+// Developer Hub - repositories, pull requests, issues, releases
+// =====================================================================
+
+model Repo {
+  id          String   @id @default(cuid())
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  branches      RepoBranch[]
+  files         RepoFile[]
+  commits       Commit[]
+  pulls         PullRequest[]
+  issues        Issue[]
+  releases      Release[]
+  collaborators RepoCollaborator[]
+
+  @@unique([ownerId, name])
+}
+
+model RepoCollaborator {
+  id     String @id @default(cuid())
+  repo   Repo   @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@unique([repoId, userId])
+}
+
+model RepoBranch {
+  id        String   @id @default(cuid())
+  repo      Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  @@unique([repoId, name])
+}
+
+// A branch's working tree: one row per file per branch.
+model RepoFile {
+  id      String @id @default(cuid())
+  repo    Repo   @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId  String
+  branch  String
+  path    String
+  content String
+
+  @@unique([repoId, branch, path])
+}
+
+model Commit {
+  id        String   @id @default(cuid())
+  repo      Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId    String
+  branch    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  message   String
+  paths     String[]
+  createdAt DateTime @default(now())
+
+  @@index([repoId, branch, createdAt])
+  @@index([authorId, createdAt])
+}
+
+// status is "OPEN", "MERGED" or "CLOSED".
+model PullRequest {
+  id         String    @id @default(cuid())
+  repo       Repo      @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId     String
+  number     Int
+  title      String
+  body       String?
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   String
+  baseBranch String
+  headBranch String
+  status     String    @default("OPEN")
+  createdAt  DateTime  @default(now())
+  closedAt   DateTime?
+
+  comments DevComment[]
+
+  @@unique([repoId, number])
+}
+
+// status is "OPEN" or "CLOSED"; col is the project-board column
+// ("todo", "doing", "done").
+model Issue {
+  id        String   @id @default(cuid())
+  repo      Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId    String
+  number    Int
+  title     String
+  body      String?
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  status    String   @default("OPEN")
+  col       String   @default("todo")
+  createdAt DateTime @default(now())
+
+  comments DevComment[]
+
+  @@unique([repoId, number])
+}
+
+// Belongs to exactly one of an issue or a pull request.
+model DevComment {
+  id        String       @id @default(cuid())
+  author    User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  body      String
+  issue     Issue?       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId   String?
+  pull      PullRequest? @relation(fields: [pullId], references: [id], onDelete: Cascade)
+  pullId    String?
+  createdAt DateTime     @default(now())
+
+  @@index([issueId])
+  @@index([pullId])
+}
+
+model Release {
+  id        String   @id @default(cuid())
+  repo      Repo     @relation(fields: [repoId], references: [id], onDelete: Cascade)
+  repoId    String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  tag       String
+  title     String
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([repoId, tag])
+}

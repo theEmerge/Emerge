@@ -1,0 +1,19 @@
+# NEXT_PUBLIC_GIPHY_API_KEY is a public Giphy client key by design - it's
+# meant to ship inside the browser bundle (that's what NEXT_PUBLIC_ means),
+# not a leaked secret. Netlify's build-time secrets scanner can't tell the
+# difference and fails the build when it finds it, so it's explicitly
+# excluded here. Everything else (DATABASE_URL, NEXTAUTH_SECRET,
+# CLOUDINARY_API_SECRET, etc.) is still scanned normally.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_GIPHY_API_KEY"
+
+# Stop other sites from putting Emerge inside a frame (clickjacking).
+# The same headers are also set in next.config.mjs so they apply to pages
+# the server renders, not just static files.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "frame-ancestors 'none'"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
