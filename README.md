@@ -1,15 +1,19 @@
 # Emerge
 
-> **TODO:** One-sentence description of what Emerge is and who it's for.
+A chronological, algorithm-free photo network with topic communities. No algorithm. No ads.
+
+**Live site:** [theemerge.netlify.app](https://theemerge.netlify.app)
 
 <!-- Optional: add a screenshot or demo GIF here -->
 <!-- ![Emerge screenshot](public/screenshot.png) -->
 
 ## Features
 
-- **TODO:** Key feature one
-- **TODO:** Key feature two
-- **TODO:** Key feature three
+- **Chronological feed:** posts appear in the order they were shared, with no ranking algorithm
+- **Topic communities:** share and browse photos within communities built around topics
+- **Ad-free:** no advertising
+- **Accounts:** registration, login and password reset
+- **TODO:** Add any other features (comments, likes, following, uploads, etc.)
 
 ## Tech Stack
 
