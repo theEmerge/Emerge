@@ -24,13 +24,16 @@ export default function RegisterPage() {
     });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(
-        data.error === "user_exists"
-          ? "That email or handle is taken."
-          : data.error === "weak_password"
-          ? "Password must be at least 8 characters."
-          : "Something went wrong."
-      );
+      const messages: Record<string, string> = {
+        user_exists: "That email or handle is taken.",
+        weak_password: "Choose a stronger password: at least 8 characters, and not a common one.",
+        password_too_long: "That password is too long (72 bytes max).",
+        invalid_email: "Enter a valid email address.",
+        invalid_name: "Name must be 1 to 50 characters.",
+        invalid_handle: "Handle must be 3 to 30 letters, numbers, dots or underscores (some names are reserved).",
+        rate_limited: "Too many attempts. Wait a minute and try again.",
+      };
+      setError(messages[data.error as string] || "Something went wrong.");
       return;
     }
     router.push("/login?registered=1");

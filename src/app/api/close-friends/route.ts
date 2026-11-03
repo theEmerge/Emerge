@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { userId: friendId } = await req.json();
+  const { userId: friendId } = await req.json().catch(() => ({}));
   if (typeof friendId !== "string" || friendId === userId) {
     return NextResponse.json({ error: "invalid_user" }, { status: 400 });
   }
@@ -43,7 +43,7 @@ export async function DELETE(req: Request) {
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { userId: friendId } = await req.json();
+  const { userId: friendId } = await req.json().catch(() => ({}));
   if (typeof friendId !== "string") {
     return NextResponse.json({ error: "invalid_user" }, { status: 400 });
   }

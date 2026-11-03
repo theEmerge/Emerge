@@ -4,7 +4,7 @@ import { sessionUser, unauthorized } from "@/lib/hub";
 
 type Stat = { key: string; label: string; value: number; note?: string };
 
-// GET ?hub=connection|developer|game -> a few real counts for that hub's home row.
+// GET ?hub=social|connection|developer|game -> a few real counts for that hub's home row.
 export async function GET(req: Request) {
   const me = await sessionUser();
   if (!me) return unauthorized();
@@ -13,7 +13,20 @@ export async function GET(req: Request) {
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   let stats: Stat[] = [];
 
-  if (hub === "connection") {
+  if (hub === "social") {
+    const [followers, following, posts, communities] = await Promise.all([
+      prisma.follow.count({ where: { followingId: me.id } }),
+      prisma.follow.count({ where: { followerId: me.id } }),
+      prisma.post.count({ where: { userId: me.id, createdAt: { gte: weekAgo } } }),
+      prisma.communityMembership.count({ where: { userId: me.id } }),
+    ]);
+    stats = [
+      { key: "followers", label: "Followers", value: followers },
+      { key: "following", label: "Following", value: following },
+      { key: "posts", label: "Posts this week", value: posts },
+      { key: "communities", label: "Communities joined", value: communities },
+    ];
+  } else if (hub === "connection") {
     const [connections, pending, applicants, going] = await Promise.all([
       prisma.proConnection.count({ where: { status: "ACCEPTED", OR: [{ requesterId: me.id }, { addresseeId: me.id }] } }),
       prisma.proConnection.count({ where: { status: "PENDING", addresseeId: me.id } }),

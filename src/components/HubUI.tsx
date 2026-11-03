@@ -72,15 +72,16 @@ const STAT_ICONS: Record<string, IconName> = {
   connections: "people", pending: "link", applicants: "briefcase", events: "calendar",
   repos: "branch", issues: "explore", pulls: "link", commits: "code",
   joined: "server", owned: "star", friends: "people", lfg: "controller",
+  followers: "heart", following: "people", posts: "image", communities: "explore",
 };
 const STAT_NOTES: Record<string, string> = {
-  connections: "Accepted connections", pending: "All caught up", events: "Upcoming RSVPs", applicants: "On your listings",
+  followers: "People following you", following: "Your chronological feed", posts: "Last 7 days", communities: "Topic spaces", connections: "Accepted connections", pending: "All caught up", events: "Upcoming RSVPs", applicants: "On your listings",
 };
 
 type StatItem = { key: string; label: string; value: number; note?: string };
 
 // A row of real counts for the hub home page (connections, repos, servers...).
-export function HubStats({ hub, keys }: { hub: "connection" | "developer" | "game"; keys?: string[] }) {
+export function HubStats({ hub, keys }: { hub: "social" | "connection" | "developer" | "game"; keys?: string[] }) {
   const [stats, setStats] = useState<StatItem[] | null>(null);
   useEffect(() => {
     let alive = true;

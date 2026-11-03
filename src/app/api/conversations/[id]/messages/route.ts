@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { requireVerifiedEmail } from "@/lib/verified";
 import { blockedUserIds } from "@/lib/blocks";
+import { isGiphyUrl } from "@/lib/mediaUrl";
 
 async function requireMembership(conversationId: string, userId: string) {
   return prisma.conversationParticipant.findUnique({
@@ -131,9 +132,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
   }
 
-  const { text, gifUrl, replyToId } = await req.json();
+  const { text, gifUrl, replyToId } = await req.json().catch(() => ({}));
   const trimmed = typeof text === "string" ? text.trim().slice(0, 2000) : "";
   const gif = typeof gifUrl === "string" && gifUrl.trim() ? gifUrl.trim() : null;
+  // Only Giphy-hosted GIFs: an arbitrary URL would let a sender make every
+  // reader's browser contact a server they control (IP / read-receipt tracking).
+  if (gif && !isGiphyUrl(gif)) return NextResponse.json({ error: "invalid_gif" }, { status: 400 });
   if (!trimmed && !gif) return NextResponse.json({ error: "empty_message" }, { status: 400 });
 
   // Only allow replying to a message that's actually in this conversation

@@ -2,12 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isOwnMediaUrl } from "@/lib/mediaUrl";
 
-function validCloudinaryUrl(url: string) {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const expectedPrefix = cloudName ? `https://res.cloudinary.com/${cloudName}/` : null;
-  return !expectedPrefix || url.startsWith(expectedPrefix);
-}
+const validCloudinaryUrl = isOwnMediaUrl;
 
 // Updates the current user's profile photo and/or banner. The client
 // uploads the image first via POST /api/uploads (same as post images) and
@@ -17,7 +14,7 @@ export async function PATCH(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const { avatarUrl, bannerUrl, bio, name, handle } = await req.json();
+  const { avatarUrl, bannerUrl, bio, name, handle } = await req.json().catch(() => ({}));
   const data: { avatarUrl?: string; bannerUrl?: string; bio?: string; name?: string; handle?: string } = {};
 
   if (name !== undefined) {

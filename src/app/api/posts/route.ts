@@ -2,16 +2,13 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isOwnMediaUrl } from "@/lib/mediaUrl";
 import { claimNextFrame } from "@/lib/rolls";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { notify } from "@/lib/notifications";
 import { requireVerifiedEmail } from "@/lib/verified";
 
-function validCloudinaryUrl(url: string) {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const expectedPrefix = cloudName ? `https://res.cloudinary.com/${cloudName}/` : null;
-  return !expectedPrefix || url.startsWith(expectedPrefix);
-}
+const validCloudinaryUrl = isOwnMediaUrl;
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
@@ -29,7 +26,13 @@ export async function POST(req: Request) {
   // The client uploads media first via POST /api/uploads (which re-encodes
   // images / passes through video, and stores it in S3-compatible storage)
   // and sends us the resulting URL. This route never touches raw bytes.
-  const { text, imageUrl, images, communityId, isReel, videoUrl, taggedUserIds, positionedTags, location } = await req.json();
+  const { text, imageUrl, images, communityId, isReel, videoUrl, taggedUserIds, positionedTags, location } = await req.json().catch(() => ({}));
+  if (text !== undefined && text !== null && (typeof text !== "string" || text.length > 5000)) {
+    return NextResponse.json({ error: "invalid_text" }, { status: 400 });
+  }
+  if (communityId !== undefined && communityId !== null && typeof communityId !== "string") {
+    return NextResponse.json({ error: "invalid_community" }, { status: 400 });
+  }
 
   // Optional place: a typed place name only. Exact GPS coordinates are never
   // accepted or stored.
@@ -44,7 +47,7 @@ export async function POST(req: Request) {
   const carousel: string[] = Array.isArray(images)
     ? images.filter((u: unknown): u is string => typeof u === "string" && !!u).slice(0, 10)
     : [];
-  const coverImageUrl: string | null = carousel[0] || imageUrl || null;
+  const coverImageUrl: string | null = carousel[0] || (typeof imageUrl === "string" && imageUrl ? imageUrl : null);
 
   if (isReel) {
     if (!videoUrl || typeof videoUrl !== "string") {

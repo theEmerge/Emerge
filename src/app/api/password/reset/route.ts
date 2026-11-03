@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { consumeAuthToken } from "@/lib/tokens";
+import { passwordProblem } from "@/lib/password";
 
 export async function POST(req: Request) {
   const { token, password } = await req.json().catch(() => ({}));
-  if (typeof password !== "string" || password.length < 8 || password.length > 200) {
-    return NextResponse.json({ error: "weak_password" }, { status: 400 });
-  }
+  const problem = passwordProblem(password);
+  if (problem) return NextResponse.json({ error: problem }, { status: 400 });
   const userId = await consumeAuthToken(token, "PASSWORD_RESET");
   if (!userId) return NextResponse.json({ error: "invalid_or_expired" }, { status: 400 });
 

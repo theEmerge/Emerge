@@ -80,12 +80,15 @@ export async function POST(req: Request) {
   }
   const meId = session.user.id;
 
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
   const hub = parseHub(body?.hub);
 
   if (Array.isArray(body?.userIds)) {
     const userIds: string[] = Array.from(new Set(body.userIds.filter((id: unknown) => typeof id === "string" && id !== meId)));
     const name = typeof body.name === "string" ? body.name.trim().slice(0, 60) : "";
+    if (userIds.length > 50) {
+      return NextResponse.json({ error: "group_too_large" }, { status: 400 });
+    }
     if (userIds.length < 2) {
       return NextResponse.json({ error: "need_at_least_two_members" }, { status: 400 });
     }

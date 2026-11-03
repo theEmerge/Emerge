@@ -27,10 +27,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     if (unverified) return unverified;
   }
 
-  const { text } = await req.json();
-  if (!text?.trim()) return NextResponse.json({ error: "empty_comment" }, { status: 400 });
+  const { text } = await req.json().catch(() => ({}));
+  if (typeof text !== "string" || !text.trim()) return NextResponse.json({ error: "empty_comment" }, { status: 400 });
+  if (text.length > 1000) return NextResponse.json({ error: "comment_too_long" }, { status: 400 });
 
   const postOwner = await prisma.post.findUnique({ where: { id: params.id }, select: { userId: true } });
+  if (!postOwner) return NextResponse.json({ error: "not_found" }, { status: 404 });
   if (postOwner && (await isBlockedEitherWay(session.user.id, postOwner.userId))) {
     return NextResponse.json({ error: "blocked" }, { status: 403 });
   }

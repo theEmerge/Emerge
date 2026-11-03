@@ -45,7 +45,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   let comment: string | undefined;
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     comment = typeof body?.comment === "string" ? body.comment.trim().slice(0, 280) || undefined : undefined;
   } catch {
     // no body sent - a plain reshare with no added comment, that's fine

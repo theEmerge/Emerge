@@ -4,9 +4,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { verifyEmailOtp } from "@/lib/otp";
+import { DUMMY_HASH } from "@/lib/password";
 
 export const authOptions: NextAuthOptions = {
-  session: { strategy: "jwt" },
+  // Sessions last 7 days (NextAuth default is 30) and are refreshed once a day.
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60, updateAge: 24 * 60 * 60 },
   secret: process.env.NEXTAUTH_SECRET,
   pages: { signIn: "/login" },
   providers: [
@@ -18,15 +20,18 @@ export const authOptions: NextAuthOptions = {
         code: { label: "Login code", type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (typeof credentials?.email !== "string" || typeof credentials?.password !== "string") return null;
+        const email = credentials.email.trim();
+        if (!email || !credentials.password || email.length > 254 || credentials.password.length > 1000) return null;
         // Per-account limit: stops password guessing on one account no matter
         // which IPs it comes from, without punishing everyone sharing an IP.
-        const { success } = await checkRateLimit(`login:${credentials.email.trim().toLowerCase()}`, "login");
+        const { success } = await checkRateLimit(`login:${email.toLowerCase()}`, "login");
         if (!success) throw new Error("RATE_LIMITED");
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } });
-        if (!user) return null;
-        const valid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!valid) return null;
+        const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } } });
+        // Always run one bcrypt comparison, even for unknown emails, so
+        // response time doesn't reveal which emails have accounts.
+        const valid = await bcrypt.compare(credentials.password, user?.passwordHash ?? DUMMY_HASH);
+        if (!user || !valid) return null;
 
         // Second step of login: the 6-digit code emailed by /api/login/start.
         const result = await verifyEmailOtp(user.id, String(credentials.code ?? "").trim());
@@ -52,10 +57,19 @@ export const authOptions: NextAuthOptions = {
         token.handle = user.handle;
         token.avatarUrl = user.avatarUrl ?? null;
       }
-      if (trigger === "update") {
-        if (session?.avatarUrl !== undefined) token.avatarUrl = session.avatarUrl;
-        if (typeof session?.name === "string") token.name = session.name;
-        if (typeof session?.handle === "string") token.handle = session.handle;
+      // The client can call update() after editing its profile, but whatever it
+      // sends is NOT trusted: the new values are re-read from the database for
+      // the signed-in user, so a tampered update() can't change who the token says you are.
+      if (trigger === "update" && typeof token.id === "string") {
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: { name: true, handle: true, avatarUrl: true },
+        });
+        if (fresh) {
+          token.name = fresh.name;
+          token.handle = fresh.handle;
+          token.avatarUrl = fresh.avatarUrl ?? null;
+        }
       }
       return token;
     },

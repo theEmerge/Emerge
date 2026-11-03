@@ -5,21 +5,24 @@ import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
 import "./hubdesign.css"
 import "./hubdesign-extras.css"
+import "./hubdesign-social.css"
+import { useTheme } from "../ThemeProvider"
 import { Brand, HdAvatar, Icon, type IconName } from "./parts"
 
-export type ShellHub = "connection" | "game" | "developer"
+export type ShellHub = "social" | "connection" | "game" | "developer"
 export type ShellNavItem = { key: string; label: string; href: string; icon: IconName; active: boolean }
 
 // Same copy as the Figma mock; "theme" is the Figma name for each hub's palette.
 const META: Record<ShellHub, { theme: string; label: string; short: string; icon: IconName; eyebrow: string; href: string }> = {
+  social: { theme: "social", label: "Social Hub", short: "social", icon: "home", eyebrow: "Your people, in order", href: "/" },
   connection: { theme: "professional", label: "Professional Hub", short: "professional", icon: "briefcase", eyebrow: "Build your next chapter", href: "/connection" },
   game: { theme: "game", label: "Game Hub", short: "gaming", icon: "controller", eyebrow: "Your party is online", href: "/game" },
   developer: { theme: "developer", label: "Developer Hub", short: "developer", icon: "code", eyebrow: "Ship what matters", href: "/developer" },
 }
-const ORDER: ShellHub[] = ["connection", "game", "developer"]
+const ORDER: ShellHub[] = ["social", "connection", "game", "developer"]
 
 export default function HubShell({
-  hub, nav, unreadMessages, unreadNotifs, messagesHref, notificationsHref, user, children,
+  hub, nav, unreadMessages, unreadNotifs, messagesHref, notificationsHref, user, onCreate, children,
 }: {
   hub: ShellHub
   nav: ShellNavItem[]
@@ -28,6 +31,7 @@ export default function HubShell({
   messagesHref: string
   notificationsHref: string
   user: { name: string; handle: string; avatarUrl?: string | null }
+  onCreate?: () => void
   children: React.ReactNode
 }) {
   const router = useRouter()
@@ -35,6 +39,7 @@ export default function HubShell({
   const searchRef = useRef<HTMLInputElement>(null)
   const [menu, setMenu] = useState(false)
   const profileHref = `/u/${user.handle}`
+  const { theme, toggleTheme } = useTheme()
 
   // ⌘K / Ctrl+K focuses search, like the hint in the design.
   useEffect(() => {
@@ -66,10 +71,6 @@ export default function HubShell({
               {hub === id && <span className="hd-active-pip" />}
             </Link>
           ))}
-          <Link href="/" className="hd-hub-option">
-            <span className="hd-hub-option-icon"><Icon name="home" size={17} /></span>
-            <span>Social Hub</span>
-          </Link>
         </div>
         <nav className="hd-side-nav" key={hub}>
           <p className="hd-micro-label">Workspace</p>
@@ -79,6 +80,12 @@ export default function HubShell({
               <span>{it.label}</span>
             </Link>
           ))}
+          {onCreate && (
+            <button className="hd-create-btn" onClick={onCreate}>
+              <Icon name="plus" size={18} />
+              <span>Create post</span>
+            </button>
+          )}
         </nav>
         <div className="hd-sidebar-bottom">
           <Link href={messagesHref} className="hd-nav-item">
@@ -139,6 +146,11 @@ export default function HubShell({
               <input ref={searchRef} name="q" aria-label="Search" placeholder={`Search ${meta.short}`} autoComplete="off" />
               <kbd>⌘ K</kbd>
             </form>
+            {hub === "social" && (
+              <button className="hd-circle-button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} title="Switch theme">
+                <Icon name={theme === "dark" ? "sun" : "moon"} />
+              </button>
+            )}
             <Link href={notificationsHref} className="hd-circle-button" aria-label="Notifications">
               <Icon name="bell" />
               {unreadNotifs > 0 && <span className="hd-notification-dot" />}
@@ -157,6 +169,11 @@ export default function HubShell({
             <Icon name={it.icon} size={21} />
           </Link>
         ))}
+        {onCreate && (
+          <button className="hd-bottom-create" onClick={onCreate} aria-label="Create post">
+            <Icon name="plus" size={21} />
+          </button>
+        )}
         <Link href={messagesHref} aria-label="Messages">
           <Icon name="message" size={21} />
           {unreadMessages > 0 && <span className="hd-unread-dot" />}

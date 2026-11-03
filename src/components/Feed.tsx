@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Repeat2, Image as ImageIcon, X, UserPlus, Search, MapPin } from "lucide-react";
+import { Repeat2, Image as ImageIcon, X, UserPlus, MapPin } from "lucide-react";
 import PostCard, { FeedPost as Post } from "./PostCard";
 import { FeedSkeleton } from "./Skeletons";
 import Avatar from "./Avatar";
@@ -11,6 +11,8 @@ import AppShell from "./AppShell";
 import StoriesBar from "./StoriesBar";
 import LikesModal from "./LikesModal";
 import TagPicker, { TagUser } from "./TagPicker";
+import { HubWelcome, HubStats } from "./HubUI";
+import { HdAvatar, Icon } from "./hubdesign/parts";
 
 type Person = { id: string; name: string; handle: string; avatarUrl: string | null };
 type Community = { id: string; slug: string; name: string; description: string | null; memberCount: number; joined: boolean };
@@ -53,6 +55,7 @@ export default function Feed() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [taggedUsers, setTaggedUsers] = useState<TagUser[]>([]);
   const [showTagPicker, setShowTagPicker] = useState(false);
+  const [framesToday, setFramesToday] = useState<number | null>(null);
   const [likesModalPostId, setLikesModalPostId] = useState<string | null>(null);
 
   // Photo tagging: tap a spot on the preview image to drop a pin, then
@@ -109,6 +112,18 @@ export default function Feed() {
   useEffect(() => {
     loadFeed();
   }, [loadFeed]);
+
+  useEffect(() => {
+    fetch("/api/rolls")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.self) setFramesToday(d.self.used); })
+      .catch(() => {});
+  }, []);
+
+  function startPost() {
+    textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    textareaRef.current?.focus();
+  }
 
   useEffect(() => {
     if (searchParams.get("compose") === "1") {
@@ -351,42 +366,66 @@ export default function Feed() {
   let lastDay: string | null = null;
   const topCommunity = communities.length ? [...communities].sort((x, y) => y.memberCount - x.memberCount)[0] : null;
 
+  const chipTabs = [{ id: "following", label: "Following" }, ...joinedCommunities.map((c) => ({ id: c.id, label: c.name }))];
+  const initials = (name: string) => name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+
   return (
     <AppShell active="home">
-      <div className="ap-shell">
-        <div className="ap-body">
-          <main className="ap-feed">
-            <div className="feed-greeting">
-              <div>
-                <p className="eyebrow">Your daily mix</p>
-                <h1>{greeting}{firstName ? `, ${firstName}` : ""}.</h1>
+      <HubWelcome
+        eyebrow={new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
+        lead={`${greeting}, `}
+        accent={`${firstName || "there"}.`}
+        body="Everyone you follow, in the order they posted. Nothing ranked, nothing boosted."
+        action={<button className="hd-primary-action" onClick={startPost}><Icon name="plus" size={18} /> Share a moment</button>}
+      />
+      <HubStats hub="social" keys={["followers", "following", "posts", "communities"]} />
+
+      <section className="hd-content-grid">
+        <div className="hd-main-column">
+          <article className="hd-social-hero">
+            <div>
+              <span className="hd-live-label"><span /> Algorithm-free</span>
+              <h3>Your day, in the order it happened.</h3>
+              <p>Frames, reels and stories from the people you chose to follow. When you are caught up, you are caught up.</p>
+              <div className="hd-hero-actions">
+                <button onClick={startPost}><Icon name="image" size={16} /> Share a frame</button>
+                <Link href="/reels"><Icon name="film" size={16} /> Watch reels</Link>
               </div>
-              <Link href="/search" className="ig-round-btn" aria-label="Search">
-                <Search size={19} />
-              </Link>
             </div>
+            <div className="hd-frames" aria-hidden="true">
+              <span className="hd-frame">FRAME 01</span>
+              <span className="hd-frame">FRAME 02</span>
+              <span className="hd-frame">FRAME 03</span>
+            </div>
+          </article>
 
+          <div className="hd-feed-card hd-stories-card">
             <StoriesBar />
+          </div>
 
-            <div className="ap-chip-row">
-              <button
-                className={"ap-chip" + (activeChip === "following" ? " active" : "")}
-                onClick={() => setActiveChip("following")}
-              >
-                Following
-              </button>
-              {joinedCommunities.map((c) => (
-                <button
-                  key={c.id}
-                  className={"ap-chip" + (activeChip === c.id ? " active" : "")}
-                  onClick={() => setActiveChip(c.id)}
-                >
-                  {c.name}
-                </button>
-              ))}
+          <div className="hd-section-heading">
+            <div>
+              <p className="hd-eyebrow">Chronological</p>
+              <h3>Your feed</h3>
             </div>
+            <Link href="/search" className="hd-link-btn"><Icon name="search" size={15} /> Find people</Link>
+          </div>
 
-            <div className="ap-composer">
+          <div className="hd-chip-row" role="tablist" aria-label="Feed source">
+            {chipTabs.map((t) => (
+              <button
+                key={t.id}
+                role="tab"
+                aria-selected={activeChip === t.id}
+                className={"hd-chip" + (activeChip === t.id ? " hd-on" : "")}
+                onClick={() => setActiveChip(t.id)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+            <div className="hd-feed-card hd-composer">
               {joinedCommunities.length > 0 && (
                 <div className="ap-target-row">
                   <span className="ap-target-label">Share to</span>
@@ -406,7 +445,7 @@ export default function Feed() {
               )}
 
               <div className="ap-composer-top">
-                <Avatar name={session?.user?.name || "You"} src={session?.user?.avatarUrl} size={38} />
+                <HdAvatar name={session?.user?.name || "You"} src={session?.user?.avatarUrl} />
                 <textarea
                   ref={textareaRef}
                   placeholder="What's happening?"
@@ -525,10 +564,16 @@ export default function Feed() {
               </div>
             </div>
 
-            {loading && <FeedSkeleton />}
-            {!loading && visiblePosts.length === 0 && (
-              <div className="ap-loading">Nothing here yet.</div>
-            )}
+
+          {loading && <FeedSkeleton />}
+          {!loading && visiblePosts.length === 0 && (
+            <div className="hd-feed-card" style={{ textAlign: "center", padding: 36 }}>
+              <p className="hd-eyebrow">All quiet</p>
+              <h3 style={{ margin: "6px 0 8px", fontFamily: "Manrope, sans-serif", fontSize: 20 }}>Nothing here yet</h3>
+              <p className="hd-rail-note">Follow a few people from Discover, or share your first frame above.</p>
+              <Link href="/discover" className="hd-link-btn" style={{ justifyContent: "center", marginTop: 12 }}>Browse Discover <Icon name="arrow" size={15} /></Link>
+            </div>
+          )}
 
             {visiblePosts.map((post, index) => {
               const label = dayLabel(post.createdAt);
@@ -574,74 +619,86 @@ export default function Feed() {
               );
             })}
 
-            {!loading && feedCursor && activeChip === "following" && (
-              <button className="ap-load-more" onClick={loadMorePosts} disabled={loadingMore}>
-                {loadingMore ? "Loading…" : "Load more"}
-              </button>
-            )}
-          </main>
 
-          <aside className="ap-rail">
-            {people.length > 0 && (
-              <section className="ap-people">
-                <p className="eyebrow">People</p>
-                <h2 className="ap-rail-heading">Worth following</h2>
-                <div className="ap-people-list">
-                  {people.map((u) => (
-                    <div className="ap-person" key={u.id}>
-                      <Link href={`/u/${u.handle}`}>
-                        <Avatar name={u.name} src={u.avatarUrl} size={36} />
-                      </Link>
-                      <Link href={`/u/${u.handle}`} className="ap-person-text">
-                        <span className="ap-person-name">{u.name}</span>
-                        <span className="ap-person-handle">@{u.handle}</span>
-                      </Link>
-                      <button
-                        className={"ap-follow-pill" + (followed[u.id] ? " following" : "")}
-                        onClick={() => toggleFollowPerson(u.id)}
-                      >
-                        {followed[u.id] ? "Following" : "Follow"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {topCommunity && (
-              <div className="ap-trend-card">
-                <p className="eyebrow">Trending now</p>
-                <p className="ap-trend-title">{topCommunity.name}</p>
-                <p className="ap-trend-sub">
-                  {topCommunity.memberCount.toLocaleString()} {topCommunity.memberCount === 1 ? "person is" : "people are"} sharing here.
-                </p>
-                <button className="ap-trend-link" onClick={() => toggleJoin(topCommunity.id)}>
-                  {topCommunity.joined ? "Joined ✓" : "Join the community →"}
-                </button>
-              </div>
-            )}
-
-            {communities.length > 1 && (
-              <div className="ap-rail-card">
-                <div className="ap-rail-title">Communities</div>
-                {communities.slice(0, 5).map((c) => (
-                  <div className="ap-sugg-row" key={c.id}>
-                    <div>
-                      <div className="ap-sugg-name">{c.name}</div>
-                      <div className="ap-sugg-sub">{c.memberCount} members</div>
-                    </div>
-                    <button className={"ap-join-btn" + (c.joined ? " joined" : "")} onClick={() => toggleJoin(c.id)}>
-                      {c.joined ? "Joined" : "Join"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <footer className="ap-rail-footer">About · Help · Privacy · Terms<br />© 2026 Emerge</footer>
-          </aside>
+          {!loading && feedCursor && activeChip === "following" && (
+            <button className="hd-load-more" onClick={loadMorePosts} disabled={loadingMore}>
+              {loadingMore ? "Loading…" : "Load more"}
+            </button>
+          )}
         </div>
-      </div>
+
+        <aside className="hd-dashboard-rail">
+          <div className="hd-rail-card hd-roll-card">
+            <span className="hd-roll-count">{framesToday ?? "–"}</span>
+            <div>
+              <p className="hd-eyebrow">Today&apos;s roll</p>
+              <h3>{framesToday === 1 ? "1 frame" : `${framesToday ?? 0} frames`}</h3>
+              <p>Rolls develop at midnight. <Link href="/archive" style={{ color: "var(--accent)", fontWeight: 700 }}>Open your archive</Link></p>
+            </div>
+          </div>
+
+          {people.length > 0 && (
+            <div className="hd-rail-card">
+              <div className="hd-section-heading hd-compact">
+                <div>
+                  <p className="hd-eyebrow">People</p>
+                  <h3>Worth following</h3>
+                </div>
+                <Link href="/discover" className="hd-link-btn">See all</Link>
+              </div>
+              {people.map((u) => (
+                <div className="hd-person-row" key={u.id}>
+                  <Link href={`/u/${u.handle}`} className="hd-person-main">
+                    <HdAvatar name={u.name} src={u.avatarUrl} />
+                    <div>
+                      <strong>{u.name}</strong>
+                      <span>@{u.handle}</span>
+                    </div>
+                  </Link>
+                  <button className={"hd-follow-pill" + (followed[u.id] ? " hd-on" : "")} onClick={() => toggleFollowPerson(u.id)}>
+                    {followed[u.id] ? "Following" : "Follow"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {topCommunity && (
+            <div className="hd-trend-card">
+              <p className="hd-eyebrow">Trending now</p>
+              <h3>{topCommunity.name}</h3>
+              <p>{topCommunity.memberCount.toLocaleString()} {topCommunity.memberCount === 1 ? "person is" : "people are"} sharing here.</p>
+              <button onClick={() => toggleJoin(topCommunity.id)}>{topCommunity.joined ? "Joined ✓" : "Join the community"}</button>
+            </div>
+          )}
+
+          {communities.length > 1 && (
+            <div className="hd-rail-card">
+              <div className="hd-section-heading hd-compact">
+                <div>
+                  <p className="hd-eyebrow">Topic spaces</p>
+                  <h3>Communities</h3>
+                </div>
+              </div>
+              {communities.slice(0, 5).map((c) => (
+                <div className="hd-community-row" key={c.id}>
+                  <span className="hd-community-badge">{initials(c.name)}</span>
+                  <div>
+                    <strong>{c.name}</strong>
+                    <span>{c.memberCount} members</span>
+                  </div>
+                  <button className={"hd-follow-pill" + (c.joined ? " hd-on" : "")} onClick={() => toggleJoin(c.id)}>
+                    {c.joined ? "Joined" : "Join"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <footer className="hd-rail-footer">About · Help · Privacy · Terms<br />© 2026 Emerge</footer>
+        </aside>
+      </section>
+
       {likesModalPostId && (
         <LikesModal postId={likesModalPostId} onClose={() => setLikesModalPostId(null)} />
       )}

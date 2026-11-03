@@ -2,7 +2,7 @@
 // Shared building blocks for the Emerge hub design (ported from the Figma Make export).
 import Link from "next/link"
 
-export type IconName = "building" | "user" | "server" | "branch" | "trash" | "arrow" | "bell" | "briefcase" | "calendar" | "check" | "chevron" | "code" | "comment" | "controller" | "explore" | "fire" | "folder" | "grid" | "heart" | "home" | "link" | "message" | "more" | "people" | "plus" | "search" | "send" | "star" | "trend"
+export type IconName = "building" | "user" | "server" | "branch" | "trash" | "arrow" | "bell" | "briefcase" | "calendar" | "check" | "chevron" | "code" | "comment" | "controller" | "explore" | "fire" | "folder" | "grid" | "heart" | "home" | "link" | "message" | "more" | "people" | "plus" | "search" | "send" | "star" | "trend" | "sun" | "moon" | "image" | "bookmark" | "film" | "repeat" | "pin"
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   building: (
@@ -132,6 +132,34 @@ const iconPaths: Record<IconName, React.ReactNode> = {
     <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z" />
   ),
   trend: <path d="m3 17 6-6 4 4 8-9m-5 0h5v5" />,
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </>
+  ),
+  moon: <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />,
+  image: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <circle cx="9" cy="9" r="1.8" />
+      <path d="m21 15-4.5-4.5L6 21" />
+    </>
+  ),
+  bookmark: <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1Z" />,
+  film: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <path d="M3 9h18M8 4l-2 5M14 4l-2 5M20 4l-2 5m-8 7 5-2.5L10 11Z" />
+    </>
+  ),
+  repeat: <path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3" />,
+  pin: (
+    <>
+      <path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </>
+  ),
 }
 
 export function Icon({

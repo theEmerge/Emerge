@@ -34,14 +34,39 @@ const redisConfigured =
   !!process.env.UPSTASH_REDIS_REST_URL && !!process.env.UPSTASH_REDIS_REST_TOKEN;
 
 let warned = false;
+
+// Fallback used when Redis isn't configured (or is unreachable). It only
+// counts within one server instance, so it is weaker than Upstash, but it
+// means brute-force protection never silently turns OFF in production.
+const memory = new Map<string, number[]>();
+function memoryLimit(key: string, tier: Tier): boolean {
+  const { limit, window } = TIER_CONFIG[tier];
+  const [n, unit] = window.split(" ");
+  const ms = Number(n) * (unit === "s" ? 1000 : unit === "m" ? 60_000 : 3_600_000);
+  const now = Date.now();
+  const k = `${tier}:${key}`;
+  const hits = (memory.get(k) || []).filter((t) => now - t < ms);
+  if (hits.length >= limit) {
+    memory.set(k, hits);
+    return false;
+  }
+  hits.push(now);
+  memory.set(k, hits);
+  if (memory.size > 5000) {
+    for (const [mk, v] of memory) if (!v.length || now - v[v.length - 1] > 3_600_000) memory.delete(mk);
+  }
+  return true;
+}
+
 const limiters: Partial<Record<Tier, Ratelimit>> = {};
 
 function getLimiter(tier: Tier): Ratelimit | null {
   if (!redisConfigured) {
     if (!warned) {
       console.warn(
-        "[rateLimit] UPSTASH_REDIS_REST_URL/TOKEN not set - rate limiting is DISABLED. " +
-          "Fine for local dev, do not deploy to production like this."
+        process.env.NODE_ENV === "production"
+          ? "[rateLimit] UPSTASH_REDIS_REST_URL/TOKEN not set - using a per-instance in-memory limiter. Configure Upstash for real protection."
+          : "[rateLimit] UPSTASH_REDIS_REST_URL/TOKEN not set - rate limiting is disabled in local dev."
       );
       warned = true;
     }
@@ -70,7 +95,17 @@ export async function checkRateLimit(
   tier: Tier
 ): Promise<{ success: boolean; remaining?: number }> {
   const limiter = getLimiter(tier);
-  if (!limiter) return { success: true }; // open when unconfigured (dev only)
-  const result = await limiter.limit(key);
-  return { success: result.success, remaining: result.remaining };
+  if (!limiter) {
+    // Open only in local dev; production falls back to the in-memory limiter.
+    if (process.env.NODE_ENV !== "production") return { success: true };
+    return { success: memoryLimit(key, tier) };
+  }
+  try {
+    const result = await limiter.limit(key);
+    return { success: result.success, remaining: result.remaining };
+  } catch (e) {
+    // Redis hiccup: don't take the site down, and don't fail open either.
+    console.error("[rateLimit] Redis error, using in-memory fallback", e);
+    return { success: memoryLimit(key, tier) };
+  }
 }

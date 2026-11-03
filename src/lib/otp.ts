@@ -9,8 +9,17 @@ export const OTP_TTL_MINUTES = 10;
 export const OTP_MAX_ATTEMPTS = 5;
 export const OTP_RESEND_COOLDOWN_SECONDS = 30;
 
+// Never fall back to a known string in production: a guessable key would let
+// anyone compute valid code hashes from a leaked database.
+function otpSecret(): string {
+  const s = process.env.NEXTAUTH_SECRET;
+  if (s) return s;
+  if (process.env.NODE_ENV === "production") throw new Error("NEXTAUTH_SECRET is not set");
+  return "dev-only-secret";
+}
+
 const mac = (userId: string, code: string) =>
-  createHmac("sha256", process.env.NEXTAUTH_SECRET || "dev-only-secret")
+  createHmac("sha256", otpSecret())
     .update(`email-verify:${userId}:${code}`)
     .digest("hex");
 

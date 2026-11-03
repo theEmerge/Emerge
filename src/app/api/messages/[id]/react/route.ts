@@ -10,8 +10,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const userId = session.user.id;
 
-  const { emoji } = await req.json();
-  if (typeof emoji !== "string" || !emoji.trim()) {
+  const { emoji } = await req.json().catch(() => ({}));
+  if (typeof emoji !== "string" || !emoji.trim() || emoji.length > 16) {
     return NextResponse.json({ error: "invalid_emoji" }, { status: 400 });
   }
 

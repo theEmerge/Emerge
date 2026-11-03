@@ -36,7 +36,8 @@ export async function uploadImage(buffer: Buffer, userId: string): Promise<strin
 
   configureCloudinary();
 
-  const processed = await sharp(buffer)
+  // limitInputPixels guards against "decompression bomb" images (tiny file, billions of pixels).
+  const processed = await sharp(buffer, { limitInputPixels: 80_000_000 })
     .rotate() // apply EXIF orientation, then strip metadata by re-encoding
     .resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 82 })
@@ -80,6 +81,7 @@ export async function uploadVideo(buffer: Buffer, userId: string): Promise<strin
       {
         folder: `emerge/reels/${userId}`,
         resource_type: "video",
+        allowed_formats: ["mp4", "mov", "webm"],
       },
       (error, result) => {
         if (error || !result) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isOwnMediaUrl } from "@/lib/mediaUrl";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { requireVerifiedEmail } from "@/lib/verified";
 import { blockedUserIds } from "@/lib/blocks";
@@ -84,7 +85,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
-  const { imageUrl, videoUrl, closeFriendsOnly } = await req.json();
+  const { imageUrl, videoUrl, closeFriendsOnly } = await req.json().catch(() => ({}));
   if ((!imageUrl && !videoUrl) || (imageUrl && videoUrl)) {
     return NextResponse.json({ error: "empty_story" }, { status: 400 });
   }
@@ -92,9 +93,7 @@ export async function POST(req: Request) {
   if (typeof url !== "string") {
     return NextResponse.json({ error: "empty_story" }, { status: 400 });
   }
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const expectedPrefix = cloudName ? `https://res.cloudinary.com/${cloudName}/` : null;
-  if (expectedPrefix && !url.startsWith(expectedPrefix)) {
+  if (!isOwnMediaUrl(url)) {
     return NextResponse.json({ error: "invalid_url" }, { status: 400 });
   }
 
