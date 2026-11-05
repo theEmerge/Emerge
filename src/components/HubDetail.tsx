@@ -9,7 +9,7 @@ export default function HubDetail({ hub }: { hub: Hub }) {
       <div className="ap-shell ig-page-narrow hub-page">
         <div className="feed-greeting">
           <div>
-            <p className="eyebrow">Planned hub{hub.modelledOn ? `, like ${hub.modelledOn}` : ""}</p>
+            <p className="eyebrow">Planned hub</p>
             <h1>{hub.name}</h1>
           </div>
           <span className={"hub-pill " + hub.status}>Planned</span>

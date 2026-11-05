@@ -40,9 +40,13 @@ export default function Feed() {
   const [activeChip, setActiveChip] = useState<string>("following"); // "following" or a community id
   const [loading, setLoading] = useState(true);
   const [greeting, setGreeting] = useState("Welcome back");
+  // Filled in after mount: the server and the browser format dates differently
+  // (locale), so rendering it during SSR causes a hydration mismatch.
+  const [todayLabel, setTodayLabel] = useState("");
   const firstName = (session?.user?.name || "").split(" ")[0];
   useEffect(() => {
     const h = new Date().getHours();
+    setTodayLabel(new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" }));
     setGreeting(h < 5 ? "Still up" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : h < 21 ? "Good evening" : "Good night");
   }, []);
 
@@ -55,7 +59,6 @@ export default function Feed() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [taggedUsers, setTaggedUsers] = useState<TagUser[]>([]);
   const [showTagPicker, setShowTagPicker] = useState(false);
-  const [framesToday, setFramesToday] = useState<number | null>(null);
   const [likesModalPostId, setLikesModalPostId] = useState<string | null>(null);
 
   // Photo tagging: tap a spot on the preview image to drop a pin, then
@@ -112,13 +115,6 @@ export default function Feed() {
   useEffect(() => {
     loadFeed();
   }, [loadFeed]);
-
-  useEffect(() => {
-    fetch("/api/rolls")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (d?.self) setFramesToday(d.self.used); })
-      .catch(() => {});
-  }, []);
 
   function startPost() {
     textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -372,7 +368,7 @@ export default function Feed() {
   return (
     <AppShell active="home">
       <HubWelcome
-        eyebrow={new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" })}
+        eyebrow={todayLabel || "Today"}
         lead={`${greeting}, `}
         accent={`${firstName || "there"}.`}
         body="Everyone you follow, in the order they posted. Nothing ranked, nothing boosted."
@@ -382,23 +378,6 @@ export default function Feed() {
 
       <section className="hd-content-grid">
         <div className="hd-main-column">
-          <article className="hd-social-hero">
-            <div>
-              <span className="hd-live-label"><span /> Algorithm-free</span>
-              <h3>Your day, in the order it happened.</h3>
-              <p>Frames, reels and stories from the people you chose to follow. When you are caught up, you are caught up.</p>
-              <div className="hd-hero-actions">
-                <button onClick={startPost}><Icon name="image" size={16} /> Share a frame</button>
-                <Link href="/reels"><Icon name="film" size={16} /> Watch reels</Link>
-              </div>
-            </div>
-            <div className="hd-frames" aria-hidden="true">
-              <span className="hd-frame">FRAME 01</span>
-              <span className="hd-frame">FRAME 02</span>
-              <span className="hd-frame">FRAME 03</span>
-            </div>
-          </article>
-
           <div className="hd-feed-card hd-stories-card">
             <StoriesBar />
           </div>
@@ -628,15 +607,6 @@ export default function Feed() {
         </div>
 
         <aside className="hd-dashboard-rail">
-          <div className="hd-rail-card hd-roll-card">
-            <span className="hd-roll-count">{framesToday ?? "–"}</span>
-            <div>
-              <p className="hd-eyebrow">Today&apos;s roll</p>
-              <h3>{framesToday === 1 ? "1 frame" : `${framesToday ?? 0} frames`}</h3>
-              <p>Rolls develop at midnight. <Link href="/archive" style={{ color: "var(--accent)", fontWeight: 700 }}>Open your archive</Link></p>
-            </div>
-          </div>
-
           {people.length > 0 && (
             <div className="hd-rail-card">
               <div className="hd-section-heading hd-compact">

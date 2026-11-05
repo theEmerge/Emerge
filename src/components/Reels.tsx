@@ -1,4 +1,5 @@
 "use client";
+import { useKeyedDoubleTap, HeartBurst } from "./DoubleTapLike";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -79,6 +80,17 @@ export default function Reels() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // double-tap a reel = like (never un-like); single tap = play / pause as before
+  const [bursts, setBursts] = useState<Record<string, number>>({});
+  const onReelTap = useKeyedDoubleTap(
+    (id) => {
+      setBursts((b) => ({ ...b, [id]: (b[id] || 0) + 1 }));
+      const r = reels.find((x) => x.id === id);
+      if (r && !r.liked) toggleLike(id);
+    },
+    (id) => toggleTapPlayPause(id),
+  );
 
   function scrollByOne(direction: 1 | -1) {
     const root = containerRef.current;
@@ -280,7 +292,7 @@ export default function Reels() {
                 loop
                 muted={muted}
                 playsInline
-                onClick={() => toggleTapPlayPause(reel.id)}
+                onClick={(e) => onReelTap(e, reel.id)}
                 onPlay={() => setPausedIds((prev) => {
                   const next = new Set(prev);
                   next.delete(reel.id);
@@ -288,6 +300,7 @@ export default function Reels() {
                 })}
                 onPause={() => setPausedIds((prev) => new Set(prev).add(reel.id))}
               />
+              <HeartBurst n={bursts[reel.id] || 0} />
               {pausedIds.has(reel.id) && (
                 <div className="ig-reel-pause-overlay">
                   <Play size={48} fill="#fff" />

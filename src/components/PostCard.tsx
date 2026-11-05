@@ -1,4 +1,5 @@
 "use client";
+import { useDoubleTap, HeartBurst } from "./DoubleTapLike";
 import { memo, useState, CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -75,6 +76,12 @@ type Props = {
 // the other cards from re-rendering when one post changes.
 function PostCard({ post, meId, priority, onLike, onSave, onReshare, onDelete, onHelpful, onShowLikes, onCommentAdded, onBlocked }: Props) {
   const [slide, setSlide] = useState(0);
+  const [burst, setBurst] = useState(0);
+  const onMediaTap = useDoubleTap(() => {
+    if (post.community) return; // community posts use "Helpful", not hearts
+    setBurst((b) => b + 1);
+    if (!post.liked) onLike(post.id); // double-tap only likes; the heart button still toggles
+  });
   const [ratio, setRatio] = useState<number | null>(null);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [comments, setComments] = useState<PostComment[] | null>(null);
@@ -153,7 +160,8 @@ function PostCard({ post, meId, priority, onLike, onSave, onReshare, onDelete, o
       {post.type === "reshare" && post.comment && <p className="ap-post-text ap-reshare-comment">{post.comment}</p>}
 
       {post.images.length > 0 && (
-        <div className="ig-post-image" style={ratio ? ({ "--post-ratio": ratio } as CSSProperties) : undefined}>
+        <div className="ig-post-image" onClick={onMediaTap} style={ratio ? ({ "--post-ratio": ratio } as CSSProperties) : undefined}>
+          <HeartBurst n={burst} />
           <Image
             src={post.images[slide] || post.images[0]}
             alt="post"

@@ -112,7 +112,9 @@
 .hd-search-box kbd { border: 1px solid var(--line); border-radius: 5px; padding: 2px 5px; font-size: 9px; }
 .hd-circle-button { position: relative; display: grid; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 50%; background: var(--surface); color: var(--ink); place-items: center; }
 .hd-notification-dot { position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border: 2px solid var(--surface); border-radius: 50%; background: var(--accent); }
-.hd-hub-content { max-width: 1240px; margin: 0 auto; animation: hd-reveal .45s ease both; }
+/* "backwards", not "both": a lingering fill on transform turns this box into the containing block for
+   every position:fixed descendant, which squashed all modals/sheets (Create, likes, tags...) into the page area. */
+.hd-hub-content { max-width: 1240px; margin: 0 auto; animation: hd-reveal .45s ease backwards; }
 @keyframes hd-reveal { from { opacity: 0; transform: translateY(7px); } }
 .hd-welcome-grid { display: flex; align-items: end; justify-content: space-between; gap: 30px; padding: 38px 0 30px; }
 .hd-welcome-copy h2 { margin: 5px 0 7px; font-family: "Manrope", sans-serif; font-size: clamp(29px, 3vw, 42px); line-height: 1.1; letter-spacing: -.055em; }
@@ -287,13 +289,17 @@
   content: "";
 }
 
+.hd-orbit-one { inset: 27%; }
+
 .hd-orbit-two {
-  inset: 4%;
+  inset: 11%;
   border-style: dashed;
   animation-direction: reverse;
   animation-duration: 34s;
-  opacity: .55;
+  border-color: rgb(103 232 142 / 11%);
 }
+
+.hd-orbit-two::after { opacity: .55; }
 
 @keyframes hd-orbit-spin {
   to { transform: rotate(360deg); }
@@ -338,12 +344,20 @@
 }
 
 .hd-map-node small { font: 7px "Space Mono", monospace; letter-spacing: .08em; text-transform: uppercase; }
-.hd-node-web { top: 7%; left: 13%; transform: rotate(-5deg); }
-.hd-node-data { right: 4%; bottom: 21%; transform: rotate(5deg); }
-.hd-node-api { bottom: 1%; left: 20%; transform: rotate(3deg); }
-.hd-map-signal { position: absolute; z-index: 1; width: 33%; height: 1px; background: linear-gradient(90deg, transparent, #67e88e, transparent); opacity: .5; transform-origin: left; }
-.hd-signal-one { top: 36%; left: 30%; transform: rotate(25deg); }
-.hd-signal-two { top: 57%; left: 49%; transform: rotate(17deg); }
+/* Each node sits on its ring (left/top are points on the circle) and counter-rotates
+   at the ring's own speed so the label stays upright while it travels. */
+.hd-map-node { animation: hd-node-upright 22s linear infinite; }
+.hd-orbit-two .hd-map-node { animation-duration: 34s; animation-direction: reverse; }  /* ring turns the other way; nodes turn back to stay upright */
+.hd-node-web  { top: 11.7%; left: 17.9%; transform: translate(-50%, -50%); }  /* ring angle -40deg */
+.hd-node-data { top: 41.3%; left: 99.2%; transform: translate(-50%, -50%); }  /* ring angle  80deg */
+.hd-node-api  { top: 97%;   left: 32.9%; transform: translate(-50%, -50%); }  /* ring angle 200deg */
+@keyframes hd-node-upright {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hd-orbit, .hd-map-node { animation: none; }
+}
 
 .hd-cockpit-copy { position: relative; z-index: 2; }
 .hd-dev-pill { display: inline-flex; align-items: center; gap: 7px; }
@@ -427,11 +441,13 @@
 }
 
 .hd-sidebar,
-.hd-mobile-header,
-.hd-app-main {
+.hd-mobile-header {
   z-index: 1;
 }
 
+/* No z-index here on purpose: it would make the page content its own stacking layer, capping
+   every modal/sheet inside it BELOW the sidebar, mobile header and tab bar. Source order alone
+   keeps the content above the ambient ::before glow. */
 .hd-app-main {
   position: relative;
 }

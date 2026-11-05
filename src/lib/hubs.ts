@@ -9,7 +9,6 @@ export type Hub = {
   slug: string;
   name: string;
   status: HubStatus;
-  modelledOn?: string;
   tagline: string;
   summary: string;
   href: string;
@@ -44,7 +43,6 @@ export const HUBS: Hub[] = [
     slug: "connection",
     name: "Connection Hub",
     status: "live",
-    modelledOn: "LinkedIn",
     tagline: "A professional network without the engagement-bait feed.",
     summary: "Build a career identity, find work and meet people in your field.",
     href: "/connection",
@@ -70,7 +68,6 @@ export const HUBS: Hub[] = [
     slug: "game",
     name: "Game Hub",
     status: "live",
-    modelledOn: "Discord",
     tagline: "A gaming community space next to the rest of your Emerge life.",
     summary: "Servers, channels and a party finder for gaming groups and friends.",
     href: "/game",
@@ -95,7 +92,6 @@ export const HUBS: Hub[] = [
     slug: "developer",
     name: "Developer Hub",
     status: "live",
-    modelledOn: "GitHub",
     tagline: "A home for projects: host code, review it together and ship.",
     summary: "Your builder identity lives on the same profile as everything else.",
     href: "/developer",

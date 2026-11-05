@@ -22,6 +22,7 @@ function hubNavFor(hub: HubId, handle?: string): HubNavItem[] {
       { key: "home", label: "Home", href: "/", icon: "home", exact: true },
       { key: "discover", label: "Discover", href: "/discover", icon: "explore", match: ["/discover", "/search"] },
       { key: "reels", label: "Reels", href: "/reels", icon: "film" },
+      { key: "messages", label: "Messages", href: "/messages", icon: "message", match: ["/messages"] },
       { key: "saved", label: "Saved", href: "/saved", icon: "bookmark" },
       { key: "hubs", label: "All hubs", href: "/hubs", icon: "grid" },
     ];
@@ -112,7 +113,7 @@ export default function AppShell({ hub: hubProp, children }: { active: Tab; hub?
   return (
       <HubShell
         hub={hub as ShellHub}
-        nav={hubNav.map((it) => ({ key: it.key, label: it.label, href: it.href, icon: it.icon, active: hubActive(it) }))}
+        nav={hubNav.map((it) => ({ key: it.key, label: it.label, href: it.key === "messages" ? `/messages${hq}` : it.href, icon: it.icon, active: hubActive(it), badge: it.key === "messages" ? unreadMessages : undefined, desktopOnly: it.key === "hubs" }))}
         unreadMessages={unreadMessages}
         unreadNotifs={unreadNotifs}
         messagesHref={`/messages${hq}`}

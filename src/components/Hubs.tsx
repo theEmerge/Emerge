@@ -30,7 +30,6 @@ export default function Hubs() {
                 <h2>{h.name}</h2>
                 <span className={"hub-pill " + h.status}>{h.status === "live" ? "Live" : "Planned"}</span>
               </div>
-              {h.modelledOn && <p className="hub-card-model">Like {h.modelledOn}</p>}
               <p className="hub-card-sum">{h.summary}</p>
             </Link>
           ))}

@@ -46,6 +46,11 @@ export default function Discover() {
   return (
     <AppShell active="discover">
       <div className="ap-shell ig-page-narrow">
+        {/* phone: the Search tab lands here, so the search bar leads the page (opens people search) */}
+        <Link href="/search" className="ig-discover-searchbar">
+          <Search size={18} />
+          <span>Search people</span>
+        </Link>
         <div className="feed-greeting">
           <div>
             <p className="eyebrow">Explore</p>

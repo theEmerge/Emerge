@@ -2,7 +2,7 @@
 // Shared building blocks for the Emerge hub design (ported from the Figma Make export).
 import Link from "next/link"
 
-export type IconName = "building" | "user" | "server" | "branch" | "trash" | "arrow" | "bell" | "briefcase" | "calendar" | "check" | "chevron" | "code" | "comment" | "controller" | "explore" | "fire" | "folder" | "grid" | "heart" | "home" | "link" | "message" | "more" | "people" | "plus" | "search" | "send" | "star" | "trend" | "sun" | "moon" | "image" | "bookmark" | "film" | "repeat" | "pin"
+export type IconName = "building" | "user" | "server" | "branch" | "trash" | "arrow" | "bell" | "briefcase" | "calendar" | "check" | "chevron" | "code" | "comment" | "controller" | "explore" | "fire" | "folder" | "grid" | "heart" | "home" | "link" | "message" | "more" | "people" | "plus" | "search" | "send" | "star" | "trend" | "sun" | "moon" | "image" | "bookmark" | "film" | "repeat" | "pin" | "reels"
 
 const iconPaths: Record<IconName, React.ReactNode> = {
   building: (
@@ -154,6 +154,12 @@ const iconPaths: Record<IconName, React.ReactNode> = {
     </>
   ),
   repeat: <path d="m17 2 4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4m14-1v2a3 3 0 0 1-3 3H3" />,
+  reels: (
+    <>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <path d="M10 8.2v7.6l6-3.8-6-3.8Z" />
+    </>
+  ),
   pin: (
     <>
       <path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z" />
@@ -166,10 +172,12 @@ export function Icon({
   name,
   size = 20,
   filled = false,
+  stroke = 1.8,
 }: {
   name: IconName
   size?: number
   filled?: boolean
+  stroke?: number
 }) {
   return (
     <svg
@@ -178,7 +186,7 @@ export function Icon({
       viewBox="0 0 24 24"
       fill={filled ? "currentColor" : "none"}
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth={stroke}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"

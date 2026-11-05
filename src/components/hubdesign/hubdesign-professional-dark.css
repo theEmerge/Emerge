@@ -1,0 +1,64 @@
+/* ==========================================================================
+   Professional (Connection) Hub, dark mode.
+   The hub is light by default; when the member switches to dark (the sun/moon
+   button in the header, saved in localStorage) it gets this deep-navy palette.
+   Selector: html[data-theme="dark"] .hd-theme-professional
+   ========================================================================== */
+html[data-theme="dark"] .hd-theme-professional {
+  --bg: #0a111f;
+  --surface: #111b2f;
+  --surface-strong: #16223a;
+  --surface-soft: #1c2b49;
+  --ink: #eaf1fd;
+  --muted: #8d9fc0;
+  --line: #243453;
+  --accent: #5b97ff;
+  --accent-soft: #16305e;
+  --accent-ink: #061430;
+  --accent-rgb: 91, 151, 255;
+  --shadow: 0 18px 46px rgb(0 0 0 / 38%);
+}
+
+html[data-theme="dark"] .hd-theme-professional::before {
+  background:
+    radial-gradient(circle at 82% 8%, rgb(91 151 255 / 16%), transparent 27rem),
+    radial-gradient(circle at 28% 78%, rgb(60 110 220 / 11%), transparent 32rem);
+}
+
+/* gradient headline keeps readable ink on the left (background-image only, so the text clip survives) */
+html[data-theme="dark"] .hd-theme-professional .hd-welcome-copy h2 {
+  background-image: linear-gradient(110deg, var(--ink) 15%, #5b97ff 70%, #8dbaff);
+}
+
+html[data-theme="dark"] .hd-theme-professional .hd-stat-card {
+  border-color: rgb(91 151 255 / 20%);
+  background: linear-gradient(145deg, rgb(22 34 58 / 94%), rgb(17 27 47 / 92%));
+}
+html[data-theme="dark"] .hd-theme-professional .hd-stat-card::after { background: rgb(91 151 255 / 9%); }
+html[data-theme="dark"] .hd-theme-professional .hd-stat-card:hover {
+  border-color: rgb(91 151 255 / 45%);
+  box-shadow: 0 18px 45px rgb(0 0 0 / 40%);
+}
+
+html[data-theme="dark"] .hd-theme-professional .hd-professional-feature {
+  border-color: rgb(91 151 255 / 30%);
+  box-shadow: 0 24px 65px rgb(0 0 0 / 45%), 0 0 0 6px rgb(91 151 255 / 8%);
+}
+html[data-theme="dark"] .hd-theme-professional .hd-feature-overlay button {
+  background: #5b97ff;
+  color: #061430;
+  box-shadow: 0 10px 25px rgb(91 151 255 / 30%);
+}
+
+html[data-theme="dark"] .hd-theme-professional .hd-feed-card,
+html[data-theme="dark"] .hd-theme-professional .hd-rail-card {
+  background: rgb(17 27 47 / 82%);
+}
+html[data-theme="dark"] .hd-theme-professional .hd-profile-card {
+  background:
+    linear-gradient(145deg, rgb(24 38 66 / 96%), rgb(17 27 47 / 90%)),
+    var(--surface);
+}
+
+html[data-theme="dark"] .hd-theme-professional .hd-err { color: #ff8a7a; }
+html[data-theme="dark"] .hd-theme-professional .hd-brand-mark { box-shadow: 0 6px 18px rgb(91 151 255 / 30%); }

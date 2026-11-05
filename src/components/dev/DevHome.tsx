@@ -126,17 +126,17 @@ export default function DevHome() {
 
       <section className="hd-dev-cockpit">
         <div className="hd-system-map" aria-label="Live system map">
+          {/* Nodes live INSIDE the rings, so they travel around the core on the ring line. */}
           <span className="hd-orbit hd-orbit-one" />
-          <span className="hd-orbit hd-orbit-two" />
+          <span className="hd-orbit hd-orbit-two">
+            <span className="hd-map-node hd-node-web"><Icon name="branch" size={17} /><small>Repos</small></span>
+            <span className="hd-map-node hd-node-data"><Icon name="link" size={17} /><small>Pulls</small></span>
+            <span className="hd-map-node hd-node-api"><Icon name="explore" size={17} /><small>Issues</small></span>
+          </span>
           <span className="hd-map-core">
             <Icon name="code" size={25} />
             <i />
           </span>
-          <span className="hd-map-node hd-node-web"><Icon name="branch" size={17} /><small>Repos</small></span>
-          <span className="hd-map-node hd-node-data"><Icon name="link" size={17} /><small>Pulls</small></span>
-          <span className="hd-map-node hd-node-api"><Icon name="explore" size={17} /><small>Issues</small></span>
-          <span className="hd-map-signal hd-signal-one" />
-          <span className="hd-map-signal hd-signal-two" />
         </div>
         <div className="hd-cockpit-copy">
           <span className="hd-dev-pill"><i /> {overview ? (overview.repos.length ? "Active workspace" : "Ready for your first repo") : "Loading"}</span>

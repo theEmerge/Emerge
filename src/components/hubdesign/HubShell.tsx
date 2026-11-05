@@ -1,16 +1,17 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import "./hubdesign.css"
 import "./hubdesign-extras.css"
 import "./hubdesign-social.css"
+import "./hubdesign-professional-dark.css"
 import { useTheme } from "../ThemeProvider"
 import { Brand, HdAvatar, Icon, type IconName } from "./parts"
 
 export type ShellHub = "social" | "connection" | "game" | "developer"
-export type ShellNavItem = { key: string; label: string; href: string; icon: IconName; active: boolean }
+export type ShellNavItem = { key: string; label: string; href: string; icon: IconName; active: boolean; badge?: number; desktopOnly?: boolean }
 
 // Same copy as the Figma mock; "theme" is the Figma name for each hub's palette.
 const META: Record<ShellHub, { theme: string; label: string; short: string; icon: IconName; eyebrow: string; href: string }> = {
@@ -38,8 +39,12 @@ export default function HubShell({
   const meta = META[hub]
   const searchRef = useRef<HTMLInputElement>(null)
   const [menu, setMenu] = useState(false)
+  const [hubMenu, setHubMenu] = useState(false) // phone header: hub switcher dropdown (Social)
+  const pathname = usePathname()
   const profileHref = `/u/${user.handle}`
   const { theme, toggleTheme } = useTheme()
+
+  useEffect(() => { setHubMenu(false) }, [pathname])
 
   // ⌘K / Ctrl+K focuses search, like the hint in the design.
   useEffect(() => {
@@ -48,7 +53,7 @@ export default function HubShell({
         e.preventDefault()
         searchRef.current?.focus()
       }
-      if (e.key === "Escape") setMenu(false)
+      if (e.key === "Escape") { setMenu(false); setHubMenu(false) }
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
@@ -78,6 +83,7 @@ export default function HubShell({
             <Link key={it.key} href={it.href} className={`hd-nav-item ${it.active ? "hd-active" : ""}`}>
               <Icon name={it.icon} filled={index === 0 && it.active} />
               <span>{it.label}</span>
+              {it.badge ? <span className="hd-nav-count">{it.badge > 99 ? "99+" : it.badge}</span> : null}
             </Link>
           ))}
           {onCreate && (
@@ -88,11 +94,13 @@ export default function HubShell({
           )}
         </nav>
         <div className="hd-sidebar-bottom">
-          <Link href={messagesHref} className="hd-nav-item">
-            <Icon name="message" />
-            <span>Messages</span>
-            {unreadMessages > 0 && <span className="hd-unread-dot" />}
-          </Link>
+          {hub !== "social" && (
+            <Link href={messagesHref} className="hd-nav-item">
+              <Icon name="message" />
+              <span>Messages</span>
+              {unreadMessages > 0 && <span className="hd-unread-dot" />}
+            </Link>
+          )}
           <div className="hd-profile-row">
             <Link href={profileHref} style={{ display: "contents" }}>
               <HdAvatar name={user.name} src={user.avatarUrl} />
@@ -115,16 +123,55 @@ export default function HubShell({
         </div>
       </aside>
 
+      {hub === "social" ? (
+        // Phone header: Create on the left, logo in the middle (tap for hubs), notifications bell on the right.
+        <header className="hd-mobile-header hd-ig-header">
+          <button className="hd-ig-plus" onClick={onCreate} aria-label="Create">
+            <Icon name="plus" size={30} stroke={1.9} />
+          </button>
+          <button className="hd-ig-title" onClick={() => setHubMenu((v) => !v)} aria-haspopup="menu" aria-expanded={hubMenu}>
+            <span className="hd-brand-mark">e</span>
+            <span className="hd-brand-name">emerge</span>
+            <Icon name="chevron" size={18} stroke={2.2} />
+          </button>
+          <Link href={notificationsHref} className="hd-ig-heart" aria-label="Notifications">
+            <Icon name="bell" size={26} stroke={1.9} />
+            {unreadNotifs > 0 && <span className="hd-ig-dot" />}
+          </Link>
+          {hubMenu && (
+            <>
+              <div className="hd-ig-scrim" onClick={() => setHubMenu(false)} />
+              <div className="hd-ig-menu" role="menu">
+                {ORDER.map((id) => (
+                  <Link key={id} href={META[id].href} role="menuitem" className={hub === id ? "hd-active" : ""}>
+                    <Icon name={META[id].icon} size={20} />
+                    <span>{META[id].label}</span>
+                  </Link>
+                ))}
+                <hr />
+                <Link href="/saved" role="menuitem"><Icon name="bookmark" size={20} /><span>Saved</span></Link>
+                <Link href="/hubs" role="menuitem"><Icon name="grid" size={20} /><span>All hubs</span></Link>
+                <Link href="/settings" role="menuitem"><Icon name="user" size={20} /><span>Settings</span></Link>
+                <button role="menuitem" onClick={toggleTheme}>
+                  <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
+                  <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+                </button>
+              </div>
+            </>
+          )}
+        </header>
+      ) : (
       <header className="hd-mobile-header">
-        <Brand />
-        <div className="hd-mobile-hubs">
-          {ORDER.map((id) => (
-            <Link key={id} href={META[id].href} className={hub === id ? "hd-active" : ""} aria-label={META[id].label}>
-              <Icon name={META[id].icon} size={18} />
-            </Link>
-          ))}
-        </div>
-      </header>
+          <Brand />
+          <div className="hd-mobile-hubs">
+            {ORDER.map((id) => (
+              <Link key={id} href={META[id].href} className={hub === id ? "hd-active" : ""} aria-label={META[id].label}>
+                <Icon name={META[id].icon} size={18} />
+              </Link>
+            ))}
+          </div>
+        </header>
+      )}
 
       <main className="hd-app-main">
         <header className="hd-page-header">
@@ -146,7 +193,7 @@ export default function HubShell({
               <input ref={searchRef} name="q" aria-label="Search" placeholder={`Search ${meta.short}`} autoComplete="off" />
               <kbd>⌘ K</kbd>
             </form>
-            {hub === "social" && (
+            {(hub === "social" || hub === "connection") && (
               <button className="hd-circle-button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} title="Switch theme">
                 <Icon name={theme === "dark" ? "sun" : "moon"} />
               </button>
@@ -163,22 +210,56 @@ export default function HubShell({
         <div className="hd-hub-content">{children}</div>
       </main>
 
-      <nav className="hd-bottombar" aria-label="Hub navigation">
-        {nav.map((it) => (
-          <Link key={it.key} href={it.href} className={it.active ? "hd-active" : ""} aria-label={it.label}>
-            <Icon name={it.icon} size={21} />
+      {hub === "social" ? (
+        // Phone tab bar, Instagram style: Home, Reels, Messages, Search, Profile.
+        <nav className="hd-bottombar hd-ig-bar" aria-label="Social navigation">
+          {([
+            { key: "home", href: "/", icon: "home", label: "Home", on: pathname === "/" },
+            { key: "reels", href: "/reels", icon: "reels", label: "Reels", on: pathname.startsWith("/reels") },
+            { key: "messages", href: messagesHref, icon: "message", label: "Messages", on: pathname.startsWith("/messages"), badge: unreadMessages },
+            { key: "search", href: "/discover", icon: "search", label: "Search and discover", on: pathname.startsWith("/discover") || pathname.startsWith("/search") },
+          ] as { key: string; href: string; icon: IconName; label: string; on: boolean; badge?: number }[]).map((t) => (
+            <Link key={t.key} href={t.href} className={t.on ? "hd-active" : ""} aria-label={t.label} aria-current={t.on ? "page" : undefined}>
+              <Icon name={t.icon} size={27} stroke={t.on ? 2.2 : 1.9} filled={t.key === "home" && t.on} />
+              {t.badge ? <span className="hd-ig-badge">{t.badge > 9 ? "9+" : t.badge}</span> : null}
+            </Link>
+          ))}
+          <Link href={profileHref} className={"hd-ig-avatar-tab" + (pathname === profileHref ? " hd-active" : "")} aria-label="Your profile">
+            <HdAvatar name={user.name} src={user.avatarUrl} small />
           </Link>
-        ))}
-        {onCreate && (
-          <button className="hd-bottom-create" onClick={onCreate} aria-label="Create post">
-            <Icon name="plus" size={21} />
-          </button>
+        </nav>
+      ) : (
+      // Other hubs: main destinations with Messages last. "desktopOnly" items (like All hubs) stay in the sidebar.
+      <nav className="hd-bottombar" aria-label="Hub navigation">
+        {(() => {
+          const items = nav.filter((it) => !it.desktopOnly)
+          const mid = onCreate ? Math.ceil(items.length / 2) : items.length
+          const link = (it: ShellNavItem) => (
+            <Link key={it.key} href={it.href} className={it.active ? "hd-active" : ""} aria-label={it.label}>
+              <Icon name={it.icon} size={21} />
+              {it.badge ? <span className="hd-unread-dot" /> : null}
+            </Link>
+          )
+          return (
+            <>
+              {items.slice(0, mid).map(link)}
+              {onCreate && (
+                <button className="hd-bottom-create" onClick={onCreate} aria-label="Create post">
+                  <Icon name="plus" size={21} />
+                </button>
+              )}
+              {items.slice(mid).map(link)}
+            </>
+          )
+        })()}
+        {hub !== "social" && (
+          <Link href={messagesHref} aria-label="Messages">
+            <Icon name="message" size={21} />
+            {unreadMessages > 0 && <span className="hd-unread-dot" />}
+          </Link>
         )}
-        <Link href={messagesHref} aria-label="Messages">
-          <Icon name="message" size={21} />
-          {unreadMessages > 0 && <span className="hd-unread-dot" />}
-        </Link>
       </nav>
+      )}
     </div>
   )
 }
