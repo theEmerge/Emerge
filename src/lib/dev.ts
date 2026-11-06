@@ -23,8 +23,10 @@ export type RepoCtx = NonNullable<Awaited<ReturnType<typeof loadRepo>>>;
 export const REPO_NAME = /^[a-zA-Z0-9._-]{1,60}$/;
 export const BRANCH_NAME = /^[a-zA-Z0-9._/-]{1,60}$/;
 export const TAG_NAME = /^[a-zA-Z0-9._-]{1,40}$/;
-export const MAX_FILE_CHARS = 200_000;
-export const MAX_FILES_PER_BRANCH = 500;
+export const MAX_FILE_CHARS = 1_000_000;      // per file (binary files count as their base64 text, so ~750 KB)
+export const MAX_FILES_PER_BRANCH = 1_000;
+export const MAX_UPLOAD_FILES = 150;          // files in one commit (the web upload splits bigger drops into several)
+export const MAX_UPLOAD_CHARS = 3_500_000;    // total size of one commit; keeps requests under the host's body limit
 
 export function validPath(p: unknown): p is string {
   if (typeof p !== "string" || !p || p.length > 200) return false;

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ErrorLine } from "../HubUI";
 import { call, errorText } from "@/lib/hubClient";
 import type { RepoProps } from "./RepoView";
+import { DropOverlay, UploadButtons, UploadPanel, fmtBytes, parseBinary, useRepoUpload } from "./RepoUpload";
 
 export default function RepoCode({ meta, base, reload }: RepoProps) {
   const [branch, setBranch] = useState(meta.branches.includes("main") ? "main" : meta.branches[0]);
@@ -53,6 +54,9 @@ export default function RepoCode({ meta, base, reload }: RepoProps) {
     setBranch(r.data.name);
   }
 
+  const existing = new Set(files || []);
+  const up = useRepoUpload({ base, branch, dir, existing, enabled: meta.canWrite, onCommitted: load });
+
   // Build one directory level from the flat list of paths.
   const prefix = dir ? dir + "/" : "";
   const here = (files || []).filter((p) => p.startsWith(prefix));
@@ -62,6 +66,7 @@ export default function RepoCode({ meta, base, reload }: RepoProps) {
 
   return (
     <div>
+      <DropOverlay up={up} branch={branch} dir={dir} />
       <div className="hx-row" style={{ marginBottom: 12 }}>
         <select className="hx-select" style={{ width: "auto" }} value={branch} onChange={(e) => setBranch(e.target.value)}>
           {meta.branches.map((b) => <option key={b}>{b}</option>)}
@@ -70,11 +75,13 @@ export default function RepoCode({ meta, base, reload }: RepoProps) {
           <>
             <input className="hx-input" style={{ width: 160 }} placeholder="new-branch-name" value={newBranch} onChange={(e) => setNewBranch(e.target.value)} />
             <button className="hx-btn small" disabled={!newBranch.trim()} onClick={makeBranch}>Branch from {branch}</button>
+            <UploadButtons up={up} />
             <button className="hx-btn small primary" onClick={() => setEditing({ path: prefix, content: "", isNew: true })}>Add file</button>
           </>
         )}
       </div>
       <ErrorLine text={err} />
+      {meta.canWrite && <UploadPanel up={up} branch={branch} existing={existing} />}
 
       {editing ? (
         <div className="hx-card hx-form">
@@ -90,12 +97,12 @@ export default function RepoCode({ meta, base, reload }: RepoProps) {
             <span className="hx-mono"><button className="hx-btn small" onClick={() => setOpen(null)}>Back</button> {open.path}</span>
             {meta.canWrite && (
               <span className="hx-row">
-                <button className="hx-btn small" onClick={() => setEditing({ path: open.path, content: open.content, isNew: false })}>Edit</button>
+                {!parseBinary(open.content) && <button className="hx-btn small" onClick={() => setEditing({ path: open.path, content: open.content, isNew: false })}>Edit</button>}
                 <button className="hx-btn small danger" onClick={() => remove(open.path)}>Delete</button>
               </span>
             )}
           </div>
-          <pre className="hx-pre">{open.content || "(empty file)"}</pre>
+          <FileBody file={open} />
         </div>
       ) : (
         <>
@@ -104,7 +111,11 @@ export default function RepoCode({ meta, base, reload }: RepoProps) {
             {files === null && <div className="ap-loading">Loading…</div>}
             {folders.sort().map((f) => <button key={f} onClick={() => setDir(prefix + f)}>📁 {f}</button>)}
             {direct.sort().map((p) => <button key={p} onClick={() => openFile(p)}>📄 {p.slice(prefix.length)}</button>)}
-            {files && files.length === 0 && <div className="hx-empty" style={{ border: "none" }}>This branch has no files.</div>}
+            {files && files.length === 0 && (
+              <div className="hx-empty" style={{ border: "none" }}>
+                This branch has no files.{meta.canWrite && <> Drag and drop files or folders anywhere on this page, or use <b>Upload files</b>.</>}
+              </div>
+            )}
           </div>
           {readme && <ReadmePreview base={base} branch={branch} />}
         </>
@@ -123,6 +134,22 @@ function ReadmePreview({ base, branch }: { base: string; branch: string }) {
     <div className="hx-card">
       <h2>README.md</h2>
       <pre className="hx-post-body" style={{ margin: 0, fontFamily: "inherit" }}>{text}</pre>
+    </div>
+  );
+}
+
+// Text shows as code; images preview; any other binary file offers a download.
+function FileBody({ file }: { file: { path: string; content: string } }) {
+  const bin = parseBinary(file.content);
+  if (!bin) return <pre className="hx-pre">{file.content || "(empty file)"}</pre>;
+  const href = `data:${bin.mime};base64,${bin.base64}`;
+  const name = file.path.split("/").pop() || "file";
+  const isImage = /^image\/(png|jpe?g|gif|webp|avif|bmp|x-icon)$/.test(bin.mime);
+  return (
+    <div className="hx-card ru-binary">
+      {isImage && <img src={href} alt={name} />}
+      <p className="hx-muted" style={{ margin: 0 }}>Binary file · {bin.mime} · {fmtBytes(bin.bytes)}</p>
+      <a className="hx-btn small" href={href} download={name}>Download</a>
     </div>
   );
 }

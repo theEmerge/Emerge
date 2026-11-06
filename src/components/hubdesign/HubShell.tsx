@@ -39,12 +39,9 @@ export default function HubShell({
   const meta = META[hub]
   const searchRef = useRef<HTMLInputElement>(null)
   const [menu, setMenu] = useState(false)
-  const [hubMenu, setHubMenu] = useState(false) // phone header: hub switcher dropdown (Social)
   const pathname = usePathname()
   const profileHref = `/u/${user.handle}`
   const { theme, toggleTheme } = useTheme()
-
-  useEffect(() => { setHubMenu(false) }, [pathname])
 
   // ⌘K / Ctrl+K focuses search, like the hint in the design.
   useEffect(() => {
@@ -53,7 +50,7 @@ export default function HubShell({
         e.preventDefault()
         searchRef.current?.focus()
       }
-      if (e.key === "Escape") { setMenu(false); setHubMenu(false) }
+      if (e.key === "Escape") setMenu(false)
     }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
@@ -123,44 +120,6 @@ export default function HubShell({
         </div>
       </aside>
 
-      {hub === "social" ? (
-        // Phone header: Create on the left, logo in the middle (tap for hubs), notifications bell on the right.
-        <header className="hd-mobile-header hd-ig-header">
-          <button className="hd-ig-plus" onClick={onCreate} aria-label="Create">
-            <Icon name="plus" size={30} stroke={1.9} />
-          </button>
-          <button className="hd-ig-title" onClick={() => setHubMenu((v) => !v)} aria-haspopup="menu" aria-expanded={hubMenu}>
-            <span className="hd-brand-mark">e</span>
-            <span className="hd-brand-name">emerge</span>
-            <Icon name="chevron" size={18} stroke={2.2} />
-          </button>
-          <Link href={notificationsHref} className="hd-ig-heart" aria-label="Notifications">
-            <Icon name="bell" size={26} stroke={1.9} />
-            {unreadNotifs > 0 && <span className="hd-ig-dot" />}
-          </Link>
-          {hubMenu && (
-            <>
-              <div className="hd-ig-scrim" onClick={() => setHubMenu(false)} />
-              <div className="hd-ig-menu" role="menu">
-                {ORDER.map((id) => (
-                  <Link key={id} href={META[id].href} role="menuitem" className={hub === id ? "hd-active" : ""}>
-                    <Icon name={META[id].icon} size={20} />
-                    <span>{META[id].label}</span>
-                  </Link>
-                ))}
-                <hr />
-                <Link href="/saved" role="menuitem"><Icon name="bookmark" size={20} /><span>Saved</span></Link>
-                <Link href="/hubs" role="menuitem"><Icon name="grid" size={20} /><span>All hubs</span></Link>
-                <Link href="/settings" role="menuitem"><Icon name="user" size={20} /><span>Settings</span></Link>
-                <button role="menuitem" onClick={toggleTheme}>
-                  <Icon name={theme === "dark" ? "sun" : "moon"} size={20} />
-                  <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
-                </button>
-              </div>
-            </>
-          )}
-        </header>
-      ) : (
       <header className="hd-mobile-header">
           <Brand />
           <div className="hd-mobile-hubs">
@@ -171,7 +130,6 @@ export default function HubShell({
             ))}
           </div>
         </header>
-      )}
 
       <main className="hd-app-main">
         <header className="hd-page-header">
@@ -180,6 +138,11 @@ export default function HubShell({
             <h1>{meta.label}</h1>
           </div>
           <div className="hd-header-actions">
+            {hub === "social" && onCreate && (
+              <button type="button" className="hd-circle-button hd-search-plus" onClick={onCreate} aria-label="Create post" title="Create post">
+                <Icon name="plus" size={22} stroke={2} />
+              </button>
+            )}
             <form
               className="hd-search-box"
               role="search"
