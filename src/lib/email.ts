@@ -32,7 +32,7 @@ export async function sendEmail(params: { to: string; subject: string; text: str
   if (g) {
     try {
       await g.sendMail({
-        from: `Emerge <${process.env.GMAIL_USER!.trim()}>`,
+        from: `Emect <${process.env.GMAIL_USER!.trim()}>`,
         to: params.to,
         subject: params.subject,
         text: params.text,

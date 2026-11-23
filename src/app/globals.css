@@ -687,7 +687,7 @@ html[data-theme="dark"] .ig-story-add { background: var(--surface); }
 
 
 /* =========================================================
-   Emerge v2 look: warm paper, ink, coral. Display type is Manrope,
+   Emect v2 look: warm paper, ink, coral. Display type is Manrope,
    body is DM Sans (both loaded by next/font in layout.tsx).
    ========================================================= */
 body { font-family: var(--font-body), system-ui, sans-serif; min-width: 320px; -webkit-font-smoothing: antialiased; }
@@ -779,7 +779,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, select:focus-
 .ig-postdetail-close { background: rgba(23,23,19,0.6); }
 
 /* =========================================================
-   Front page, matched to the Emerge mockup
+   Front page, matched to the Emect mockup
    ========================================================= */
 /* sidebar: nav, coral Create post, profile at the bottom */
 .ig-nav-items { flex: 0 0 auto; gap: 8px; }
@@ -1295,7 +1295,7 @@ html[data-theme="dark"] .hub-pill.live { color: #5fd08a; }
 
 /* =========================================================
    Per-hub themes. AppShell puts data-hub on .ig-shell.
-   Social keeps the original Emerge palette (no overrides).
+   Social keeps the original Emect palette (no overrides).
    The accent lives in --blue / --blue-deep like everywhere else,
    so every existing component picks it up automatically.
    ========================================================= */
@@ -1344,7 +1344,7 @@ html[data-theme] .ig-shell[data-hub="game"] {
 html[data-theme="dark"] .ig-shell[data-hub="developer"] .hx-btn.primary { color: #04130A; }
 
 /* =========================================================
-   New hub design (from the Emerge hubs mock-up).
+   New hub design (from the Emect hubs mock-up).
    Palettes, page header, welcome block, rounded cards, accent nav.
    ========================================================= */
 

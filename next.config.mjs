@@ -9,7 +9,7 @@ const nextConfig = {
     loader: "custom",
     loaderFile: "./src/lib/cloudinaryLoader.ts",
   },
-  // Security headers. The CSP lists exactly the outside hosts Emerge uses
+  // Security headers. The CSP lists exactly the outside hosts Emect uses
   // (Cloudinary media + uploads, Giphy, Google Fonts, Unsplash banners).
   // 'unsafe-inline' for scripts/styles is needed by Next's inline bootstrap and
   // the theme-init script; everything else (objects, framing, base tag, form

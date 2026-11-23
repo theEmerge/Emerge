@@ -28,7 +28,7 @@ export default function HubDetail({ hub }: { hub: Hub }) {
           ))}
         </ul>
 
-        <h2 className="hub-h2">How it fits Emerge</h2>
+        <h2 className="hub-h2">How it fits Emect</h2>
         <p className="hub-body">{hub.fit}</p>
 
         {hub.needs && (

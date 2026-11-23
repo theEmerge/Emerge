@@ -114,7 +114,7 @@ export default function DevHome() {
           <div className="hd-form">
             <label className="hd-field">Name<input className="hd-input" maxLength={60} placeholder="my-project" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
             <label className="hd-field">Description<input className="hd-input" maxLength={300} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></label>
-            <label className="hd-check"><input type="checkbox" checked={form.isPublic} onChange={(e) => setForm({ ...form, isPublic: e.target.checked })} /> Public (anyone on Emerge can read it)</label>
+            <label className="hd-check"><input type="checkbox" checked={form.isPublic} onChange={(e) => setForm({ ...form, isPublic: e.target.checked })} /> Public (anyone on Emect can read it)</label>
             {err && <p className="hd-err" role="alert">{err}</p>}
             <div className="hd-btn-row">
               <button className="hd-btn hd-btn-solid" disabled={!form.name.trim()} onClick={create}>Create</button>
@@ -141,7 +141,7 @@ export default function DevHome() {
         <div className="hd-cockpit-copy">
           <span className="hd-dev-pill"><i /> {overview ? (overview.repos.length ? "Active workspace" : "Ready for your first repo") : "Loading"}</span>
           <h3>Build in flow, not in tabs.</h3>
-          <p>Code, pull requests, issues and releases live together, right next to the rest of your Emerge life.</p>
+          <p>Code, pull requests, issues and releases live together, right next to the rest of your Emect life.</p>
           <div className="hd-cockpit-actions">
             <button onClick={toAllRepos}>Open repositories <Icon name="arrow" size={17} /></button>
             {overview && <span>{overview.pulse.total} commit{overview.pulse.total === 1 ? "" : "s"} in the last 12 days</span>}

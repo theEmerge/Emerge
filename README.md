@@ -1,11 +1,11 @@
-# Emerge
+# Emect
 
 A chronological, algorithm-free photo network with topic communities. No algorithm. No ads.
 
 **Live site:** [theemerge.netlify.app](https://theemerge.netlify.app)
 
 <!-- Optional: add a screenshot or demo GIF here -->
-<!-- ![Emerge screenshot](public/screenshot.png) -->
+<!-- ![Emect screenshot](public/screenshot.png) -->
 
 ## Features
 

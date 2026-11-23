@@ -665,7 +665,7 @@ export default function Feed() {
             </div>
           )}
 
-          <footer className="hd-rail-footer">About · Help · Privacy · Terms<br />© 2026 Emerge</footer>
+          <footer className="hd-rail-footer">About · Help · Privacy · Terms<br />© 2026 Emect</footer>
         </aside>
       </section>
 

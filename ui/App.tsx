@@ -152,7 +152,7 @@ export default function App() {
     <div className="min-h-screen bg-[#f4f3ef] text-[#171713]">
       <header className="mobile-header">
         <div className="brand-mark">e</div>
-        <span className="brand-name">emerge</span>
+        <span className="brand-name">emect</span>
         <div className="ml-auto flex items-center gap-2">
           <button className="icon-button" aria-label="Search"><Icon name="search" /></button>
           <button className="icon-button relative" aria-label="Messages"><Icon name="message" /><span className="notification-dot" /></button>
@@ -162,7 +162,7 @@ export default function App() {
       <aside className="sidebar">
         <div className="flex items-center gap-3 px-2">
           <div className="brand-mark">e</div>
-          <span className="brand-name">emerge</span>
+          <span className="brand-name">emect</span>
         </div>
         <nav className="mt-12 space-y-2">
           {nav.map(([icon, label]) => (
@@ -277,7 +277,7 @@ export default function App() {
             <button className="mt-5 text-xs font-bold text-white">Explore the topic →</button>
           </div>
           <footer className="mt-6 text-[11px] leading-5 text-[#99978f]">
-            About · Help · Privacy · Terms · Language<br />© 2026 Emerge Social
+            About · Help · Privacy · Terms · Language<br />© 2026 Emect Social
           </footer>
         </aside>
       </main>

@@ -69,7 +69,7 @@ export default function Search() {
         )}
 
         {!loading && !searched && (
-          <div className="ap-loading">Search for anyone on Emerge by name or @handle.</div>
+          <div className="ap-loading">Search for anyone on Emect by name or @handle.</div>
         )}
       </div>
     </AppShell>

@@ -1,4 +1,4 @@
-// Single source of truth for the hubs described in the Emerge platform overview.
+// Single source of truth for the hubs described in the Emect platform overview.
 // The switcher, the /hubs overview and every /hubs/[slug] page read from here.
 
 export type HubId = "social" | "connection" | "game" | "developer";
@@ -27,7 +27,7 @@ export const HUBS: Hub[] = [
     name: "Social Hub",
     status: "live",
     tagline: "Chronological, algorithm-free photo and community feed.",
-    summary: "The original Emerge: personal rolls and communities, with nothing ranked or boosted.",
+    summary: "The original Emect: personal rolls and communities, with nothing ranked or boosted.",
     href: "/",
     features: [
       "Personal rolls capped at 24 frames a day",
@@ -49,7 +49,7 @@ export const HUBS: Hub[] = [
     features: [
       "Professional profile: headline, experience, education, skills, portfolio link",
       "Connections, with mutual connections shown on every profile",
-      "Job board with applications; message applicants from the Emerge inbox",
+      "Job board with applications; message applicants from the Emect inbox",
       "Company pages with their open roles",
       "Endorsements and written recommendations from connections",
       "Chronological professional feed with no ranking",
@@ -59,7 +59,7 @@ export const HUBS: Hub[] = [
       "Industry communities (Social Hub communities cover this for now)",
       "A dedicated search engine; people and job search use database queries",
     ],
-    fit: "Your Emerge profile is the base of your professional profile. Connection Hub reuses messaging, notifications and blocking, and the no-algorithm rule applies here too, so reach is never bought or gamed.",
+    fit: "Your Emect profile is the base of your professional profile. Connection Hub reuses messaging, notifications and blocking, and the no-algorithm rule applies here too, so reach is never bought or gamed.",
     needs: "A dedicated search engine for jobs and people instead of database queries.",
     roadmapPhase: "Then",
   },
@@ -68,7 +68,7 @@ export const HUBS: Hub[] = [
     slug: "game",
     name: "Game Hub",
     status: "live",
-    tagline: "A gaming community space next to the rest of your Emerge life.",
+    tagline: "A gaming community space next to the rest of your Emect life.",
     summary: "Servers, channels and a party finder for gaming groups and friends.",
     href: "/game",
     features: [
@@ -105,7 +105,7 @@ export const HUBS: Hub[] = [
     ],
     notYet: [
       "Real git: repositories live in the database, so there is no clone or push over git",
-      "Organizations and teams mapped to Emerge communities",
+      "Organizations and teams mapped to Emect communities",
       "Per-repo discussions, and line-level review comments",
       "Sharing builds and devlogs straight into the Social Hub",
     ],
@@ -136,7 +136,7 @@ export const PRINCIPLES = [
 
 export const ROADMAP = [
   { phase: "Social Hub", focus: "Polish, stability, finish gaps: profile comments, community pages, infinite scroll, real-time chat", outcome: "A solid, trustworthy core everything else sits on" },
-  { phase: "Platform foundation: built", focus: "Hub switcher, hub-aware shell, shared identity and inbox", outcome: "Emerge feels like one platform" },
+  { phase: "Platform foundation: built", focus: "Hub switcher, hub-aware shell, shared identity and inbox", outcome: "Emect feels like one platform" },
   { phase: "Connection Hub: first release built", focus: "Professional profiles, connections, jobs, company pages, endorsements", outcome: "Next: intro requests and search" },
   { phase: "Game Hub: first release built", focus: "Servers, text channels, presence, party finder", outcome: "Next: real-time layer, then voice" },
   { phase: "Developer Hub: first release built", focus: "Repos, branches, pull requests, issues, releases, developer profiles", outcome: "Next: real git hosting, organizations" },

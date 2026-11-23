@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const token = await createAuthToken(user.id, "PASSWORD_RESET", 30);
   await sendEmail({
     to: user.email,
-    subject: "Reset your Emerge password",
+    subject: "Reset your Emect password",
     text:
       `Hi ${user.name},\n\n` +
       `Use this link to choose a new password. It works once and expires in 30 minutes:\n\n` +

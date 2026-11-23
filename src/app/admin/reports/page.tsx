@@ -36,7 +36,7 @@ export default function AdminReportsPage() {
   return (
     <div className="ap-root" style={{ maxWidth: 720, margin: "0 auto", padding: 16 }}>
       <h1 style={{ fontSize: 22, marginBottom: 4 }}>Open reports</h1>
-      <p style={{ opacity: 0.7, marginBottom: 16 }}><Link href="/">← Back to Emerge</Link> · check daily</p>
+      <p style={{ opacity: 0.7, marginBottom: 16 }}><Link href="/">← Back to Emect</Link> · check daily</p>
       {error && <p>{error}</p>}
       {!error && reports === null && <p>Loading…</p>}
       {reports && reports.length === 0 && <p>Nothing to review. 🎉</p>}

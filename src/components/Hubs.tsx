@@ -14,7 +14,7 @@ export default function Hubs() {
           </div>
         </div>
         <p className="ig-page-sub">
-          Emerge is one platform with several windows, called hubs. Each serves a different part of digital life, and all
+          Emect is one platform with several windows, called hubs. Each serves a different part of digital life, and all
           of them share a single account, profile and inbox.
         </p>
 
@@ -57,7 +57,7 @@ export default function Hubs() {
           ))}
         </ul>
 
-        <h2 className="hub-h2">Where Emerge is</h2>
+        <h2 className="hub-h2">Where Emect is</h2>
         <ol className="hub-roadmap">
           {ROADMAP.map((r, i) => (
             <li key={r.phase} className={i < 5 ? "now" : ""}>

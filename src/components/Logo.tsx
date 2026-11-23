@@ -18,7 +18,7 @@ export default function Logo({
         display: className ? "flex" : "inline-flex",
         justifyContent: className ? "center" : undefined,
       }}
-      aria-label="Emerge"
+      aria-label="Emect"
     >
       <span className="brand-mark" style={{ width: mark, height: mark }}>
         {/* drawn, not typed: a font glyph sits off-centre in its line box */}
@@ -27,7 +27,7 @@ export default function Logo({
         </svg>
       </span>
       <span className="brand-name" style={{ fontSize: name }}>
-        emerge
+        emect
       </span>
     </span>
   );

@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 // truncated - reject it instead of pretending it all counts.
 const COMMON = new Set([
   "password", "password1", "password123", "12345678", "123456789", "1234567890", "qwertyui", "qwerty123",
-  "iloveyou", "letmein1", "welcome1", "admin123", "abc12345", "11111111", "00000000", "emerge123", "emergeemerge",
+  "iloveyou", "letmein1", "welcome1", "admin123", "abc12345", "11111111", "00000000", "emerge123", "emergeemerge", "emect123", "emectemect",
 ]);
 
 export function passwordProblem(pw: unknown, context: { email?: string; handle?: string } = {}): string | null {

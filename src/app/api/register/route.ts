@@ -8,7 +8,7 @@ import { passwordProblem } from "@/lib/password";
 const HANDLE_RE = /^[A-Za-z0-9_.]{3,30}$/;
 const EMAIL_RE = /^[^\s@<>()"',;:\\]+@[^\s@<>()"',;:\\]+\.[^\s@<>()"',;:\\]{2,}$/;
 const RESERVED = new Set([
-  "admin", "administrator", "root", "support", "help", "emerge", "official", "staff", "team", "moderator", "mod",
+  "admin", "administrator", "root", "support", "help", "emerge", "emect", "official", "staff", "team", "moderator", "mod",
   "api", "login", "register", "settings", "search", "discover", "reels", "saved", "hubs", "game", "developer",
   "connection", "messages", "notifications", "u", "null", "undefined",
 ]);

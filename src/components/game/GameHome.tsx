@@ -104,7 +104,7 @@ export default function GameHome() {
             <div className="hd-game-glow" />
             <div className="hd-feature-overlay">
               <span className="hd-live-label"><span /> {lfg ? "Looking for players" : "Start something"}</span>
-              <p className="hd-event-kicker">{lfg ? lfg.game : "Emerge community"}</p>
+              <p className="hd-event-kicker">{lfg ? lfg.game : "Emect community"}</p>
               <h3>{lfg ? lfg.title : "Find your squad tonight"}</h3>
               <p>{lfg ? `${lfg.players.length} of ${lfg.slots} spots filled · hosted by ${lfg.author.name}` : "Post what you're playing and let people join your party."}</p>
               <div className="hd-feature-actions">

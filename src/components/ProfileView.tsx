@@ -425,7 +425,7 @@ export default function ProfileView({ handle }: { handle: string }) {
               )}
 
               <div className="hub-profile-links">
-                <span className="hx-muted">Also on Emerge:</span>
+                <span className="hx-muted">Also on Emect:</span>
                 <Link href={`/connection/in/${profile.user.handle}`}>Professional profile</Link>
                 <Link href={`/developer/u/${profile.user.handle}`}>Developer profile</Link>
               </div>

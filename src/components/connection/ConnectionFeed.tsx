@@ -100,7 +100,7 @@ export default function ConnectionFeed() {
           <article className="hd-feature-card hd-professional-feature">
             <img src={TEAM_IMG} alt="" />
             <div className="hd-feature-overlay">
-              <span className="hd-live-label"><span /> {nextEvent ? "Next event" : "Hiring on Emerge"}</span>
+              <span className="hd-live-label"><span /> {nextEvent ? "Next event" : "Hiring on Emect"}</span>
               <h3>{nextEvent ? nextEvent.title : "Find your next opportunity"}</h3>
               <p>
                 {nextEvent

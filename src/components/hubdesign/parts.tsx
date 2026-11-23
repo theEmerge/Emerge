@@ -1,5 +1,5 @@
 "use client"
-// Shared building blocks for the Emerge hub design (ported from the Figma Make export).
+// Shared building blocks for the Emect hub design (ported from the Figma Make export).
 import Link from "next/link"
 
 export type IconName = "building" | "user" | "server" | "branch" | "trash" | "arrow" | "bell" | "briefcase" | "calendar" | "check" | "chevron" | "code" | "comment" | "controller" | "explore" | "fire" | "folder" | "grid" | "heart" | "home" | "link" | "message" | "more" | "people" | "plus" | "search" | "send" | "star" | "trend" | "sun" | "moon" | "image" | "bookmark" | "film" | "repeat" | "pin" | "reels"
@@ -207,9 +207,9 @@ export function HdAvatar({ name, src, small = false }: { name: string; src?: str
 
 export function Brand() {
   return (
-    <Link href="/" className="hd-brand" aria-label="Emerge home">
+    <Link href="/" className="hd-brand" aria-label="Emect home">
       <span className="hd-brand-mark">e</span>
-      <span className="hd-brand-name">emerge</span>
+      <span className="hd-brand-name">emect</span>
     </Link>
   )
 }

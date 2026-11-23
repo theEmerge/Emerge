@@ -60,7 +60,7 @@ export default function Discover() {
             <Search size={19} />
           </Link>
         </div>
-        <p className="ig-page-sub">Fresh photos from across Emerge.</p>
+        <p className="ig-page-sub">Fresh photos from across Emect.</p>
 
         {loading && <GridSkeleton />}
         {error && <div className="ap-loading">Couldn't load Discover. Check the database is up to date and try again.</div>}

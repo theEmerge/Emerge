@@ -74,7 +74,7 @@ export async function POST(req: Request) {
       admins.map((to) =>
         sendEmail({
           to,
-          subject: `Emerge report: ${targetType.toLowerCase()} (${reason})`,
+          subject: `Emect report: ${targetType.toLowerCase()} (${reason})`,
           text: `New report.\n\nType: ${targetType}\nReason: ${reason}\n${note ? `Note: ${note}\n` : ""}\nReview: ${appUrl()}/admin/reports`,
         })
       )

@@ -5,7 +5,7 @@ import { checkRateLimit } from "./rateLimit";
 import { requireVerifiedEmail } from "./verified";
 
 // Shared plumbing for the Connection, Game and Developer hub APIs.
-// Every hub route authenticates with the same Emerge session.
+// Every hub route authenticates with the same Emect session.
 
 export const userSelect = { id: true, name: true, handle: true, avatarUrl: true } as const;
 

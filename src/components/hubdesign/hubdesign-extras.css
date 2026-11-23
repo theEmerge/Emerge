@@ -1,10 +1,10 @@
 /* ==========================================================================
    Additions on top of the Figma design (hubdesign.css). Only things the
    mock did not need once it is wired to real data: the colour bridge for
-   Emerge's existing hub sub-pages, form controls, mobile tab bar, menus.
+   Emect's existing hub sub-pages, form controls, mobile tab bar, menus.
    ========================================================================== */
 
-/* ---- Bridge: old Emerge variables resolve to the Figma theme tokens, so every
+/* ---- Bridge: old Emect variables resolve to the Figma theme tokens, so every
    existing hub page (jobs, network, repos, servers...) picks up the new look. ---- */
 .hd-app { --text: var(--ink); --text-dim: var(--muted); --border: var(--line); --surface-2: var(--surface-soft); --blue: var(--accent); --blue-deep: var(--accent); --cyan: var(--accent); }
 .hd-theme-professional { --accent-rgb: 52, 120, 246; }
@@ -63,7 +63,7 @@ a.hd-hub-option, a.hd-nav-item { text-decoration: none; }
 .hd-menu a, .hd-menu button { display: flex; width: 100%; align-items: center; gap: 9px; border: 0; border-radius: 8px; background: transparent; padding: 9px 10px; color: var(--ink); font-size: 12px; font-weight: 600; text-align: left; text-decoration: none; }
 .hd-menu a:hover, .hd-menu button:hover { background: var(--surface-soft); }
 
-/* Mobile tab bar: the Figma mock had none, but Emerge's hubs have several pages */
+/* Mobile tab bar: the Figma mock had none, but Emect's hubs have several pages */
 .hd-bottombar { display: none; }
 @media (max-width: 880px) {
   .hd-bottombar { position: fixed; z-index: 30; right: 0; bottom: 0; left: 0; display: flex; justify-content: space-around; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 92%, transparent); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); backdrop-filter: blur(18px); }

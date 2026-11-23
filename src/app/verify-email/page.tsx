@@ -27,7 +27,7 @@ function Verify() {
       {state === "ok" && (
         <>
           <p className="ap-auth-sub">Email confirmed. You can post and message now.</p>
-          <Link href="/" className="ap-post-btn ap-auth-submit" style={{ textAlign: "center" }}>Open Emerge</Link>
+          <Link href="/" className="ap-post-btn ap-auth-submit" style={{ textAlign: "center" }}>Open Emect</Link>
         </>
       )}
       {state === "bad" && (

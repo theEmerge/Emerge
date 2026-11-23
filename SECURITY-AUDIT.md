@@ -1,4 +1,4 @@
-# Emerge security audit
+# Emect security audit
 
 Scope: auth, sessions, uploads, API input validation and authorization, headers, dependencies. Source reviewed: the committed code in `emerge-app.rar`. Tested offline (helper unit tests + syntax checks); the full app was not run.
 

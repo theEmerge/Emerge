@@ -6,7 +6,7 @@ import { blockedUserIds } from "@/lib/blocks";
 
 const PAGE = 30;
 
-// Recent photo posts from everyone else on Emerge (newest first, no
+// Recent photo posts from everyone else on Emect (newest first, no
 // algorithm). People you follow are included on purpose: with a small
 // community, hiding them left this page empty. Profiles
 // are public by design, so no extra privacy filtering is needed here.

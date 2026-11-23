@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Emerge hub design (ported 1:1 from the Figma Make "Stunning Social Media UI").
+   Emect hub design (ported 1:1 from the Figma Make "Stunning Social Media UI").
    Every class is namespaced "hd-" so nothing leaks into or out of the rest of
    the app. The block below reproduces the Tailwind v4 preflight the original
    relied on, scoped to .hd-app and at zero specificity (same as the original).

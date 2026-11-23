@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata = {
-  title: "Emerge",
+  title: "Emect",
   description: "A chronological, algorithm-free photo network with topic communities.",
 };
 
