@@ -214,6 +214,7 @@ html[data-theme="dark"] .hd-theme-social::before {
 
 @media (max-width: 880px) {
   .hd-theme-social .hd-app-main { padding-bottom: 84px; }
+  .hd-theme-social .hd-welcome-grid .hd-primary-action { display: none; } /* the "+" beside Search creates posts on phones */
   .hd-app.hd-theme-social { --hd-chrome: 206px; } /* 66 top bar + 76 search row + 64 tab bar */
 
   /* chat and reels fit exactly between the search row and the tab bar, so no spare scroll space */

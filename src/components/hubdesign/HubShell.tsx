@@ -215,12 +215,10 @@ export default function HubShell({
             </>
           )
         })()}
-        {hub !== "social" && (
-          <Link href={messagesHref} aria-label="Messages">
-            <Icon name="message" size={21} />
-            {unreadMessages > 0 && <span className="hd-unread-dot" />}
-          </Link>
-        )}
+        <Link href={messagesHref} aria-label="Messages">
+          <Icon name="message" size={21} />
+          {unreadMessages > 0 && <span className="hd-unread-dot" />}
+        </Link>
       </nav>
       )}
     </div>
