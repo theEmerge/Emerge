@@ -91,9 +91,17 @@ export default function Feed() {
       .catch(() => {});
     try {
       const feedRes = await fetch("/api/feed");
-      const feedData = await feedRes.json();
-      setPosts(feedData.posts || []);
-      setFeedCursor(feedData.nextCursor ?? null);
+      // A failed request can come back with an empty body, so check the
+      // status before parsing instead of letting .json() throw.
+      const feedData = feedRes.ok ? await feedRes.json().catch(() => null) : null;
+      if (feedData) {
+        setPosts(feedData.posts || []);
+        setFeedCursor(feedData.nextCursor ?? null);
+      } else {
+        console.error("Could not load the feed (status " + feedRes.status + ")");
+      }
+    } catch (err) {
+      console.error("Could not load the feed", err);
     } finally {
       setLoading(false);
     }
@@ -104,9 +112,13 @@ export default function Feed() {
     setLoadingMore(true);
     try {
       const res = await fetch(`/api/feed?cursor=${encodeURIComponent(feedCursor)}`);
-      const data = await res.json();
-      setPosts((prev) => [...prev, ...(data.posts || [])]);
-      setFeedCursor(data.nextCursor ?? null);
+      const data = res.ok ? await res.json().catch(() => null) : null;
+      if (data) {
+        setPosts((prev) => [...prev, ...(data.posts || [])]);
+        setFeedCursor(data.nextCursor ?? null);
+      }
+    } catch (err) {
+      console.error("Could not load more posts", err);
     } finally {
       setLoadingMore(false);
     }

@@ -34,6 +34,18 @@ function decodeCursor(raw: string | null): Date | null {
 }
 
 export async function GET(req: Request) {
+  try {
+    return await buildFeed(req);
+  } catch (err) {
+    // Always answer with JSON, even when the database call fails, so the
+    // browser never receives an empty body. The real error lands in the
+    // server log (terminal locally, Netlify function logs in production).
+    console.error("[api/feed] failed:", err);
+    return NextResponse.json({ error: "feed_unavailable" }, { status: 500 });
+  }
+}
+
+async function buildFeed(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const userId = session.user.id;
