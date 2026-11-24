@@ -40,7 +40,12 @@ export default function HubShell({
   const searchRef = useRef<HTMLInputElement>(null)
   const [menu, setMenu] = useState(false)
   const pathname = usePathname()
-  const profileHref = `/u/${user.handle}`
+  // Each hub opens its own profile. The Game hub has no profile page of its
+  // own, so it still uses the social one.
+  const profileHref =
+    hub === "connection" ? `/connection/in/${user.handle}`
+    : hub === "developer" ? `/developer/u/${user.handle}`
+    : `/u/${user.handle}`
   const { theme, toggleTheme } = useTheme()
 
   // ⌘K / Ctrl+K focuses search, like the hint in the design.

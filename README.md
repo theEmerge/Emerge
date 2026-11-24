@@ -2,7 +2,7 @@
 
 A chronological, algorithm-free photo network with topic communities. No algorithm. No ads.
 
-**Live site:** [theemerge.netlify.app](https://theemerge.netlify.app)
+**Live site:** [emect.netlify.app](https://emect.netlify.app)
 
 <!-- Optional: add a screenshot or demo GIF here -->
 <!-- ![Emect screenshot](public/screenshot.png) -->
