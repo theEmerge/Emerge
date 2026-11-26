@@ -19,8 +19,8 @@ const nextConfig = {
     const csp = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
       "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.giphy.com",
       "media-src 'self' blob: https://res.cloudinary.com",
       `connect-src 'self' https://api.cloudinary.com https://api.giphy.com${isDev ? " ws: wss:" : ""}`,

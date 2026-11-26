@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Manrope } from "next/font/google";
+import { DM_Sans, Manrope, Space_Mono } from "next/font/google";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Providers from "./providers";
@@ -10,7 +10,8 @@ import { SITE_DESCRIPTION, SITE_NAME, SITE_OG_IMAGE, SITE_TITLE, SITE_URL } from
 // fonts.googleapis.com, no layout shift (size-adjusted fallback), and only
 // the weights the UI actually uses.
 const body = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap", variable: "--font-body" });
-const display = Manrope({ subsets: ["latin"], weight: ["700", "800"], display: "swap", variable: "--font-display" });
+const display = Manrope({ subsets: ["latin"], weight: ["600", "700", "800"], display: "swap", variable: "--font-display" });
+const mono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"], display: "swap", variable: "--font-mono" });
 
 // Tints the phone's address bar / status area to match the app.
 export const viewport: Viewport = {
@@ -46,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // to make its own /api/auth/session round-trip before it knows who you are.
   const session = await getServerSession(authOptions);
   return (
-    <html lang="en" suppressHydrationWarning className={`${body.variable} ${display.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${body.variable} ${display.variable} ${mono.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

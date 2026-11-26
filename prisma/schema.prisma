@@ -18,6 +18,8 @@ model User {
   bio          String?
   createdAt    DateTime @default(now())
   emailVerifiedAt DateTime?
+  // When the person accepted the Terms and Privacy Policy at sign-up. We keep no date of birth, only that they confirmed they are old enough.
+  termsAcceptedAt DateTime?
 
   blocksMade     Block[]     @relation("BlockBlocker")
   blocksReceived Block[]     @relation("BlockBlocked")
@@ -80,9 +82,9 @@ model User {
 
 model Follow {
   id          String   @id @default(cuid())
-  follower    User     @relation("following", fields: [followerId], references: [id])
+  follower    User     @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
   followerId  String
-  following   User     @relation("followedBy", fields: [followingId], references: [id])
+  following   User     @relation("followedBy", fields: [followingId], references: [id], onDelete: Cascade)
   followingId String
   createdAt   DateTime @default(now())
 
@@ -97,7 +99,7 @@ model Follow {
 // throws ROLL_FULL).
 model Roll {
   id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   date        DateTime // truncated to UTC midnight
   framesUsed  Int      @default(0)
@@ -110,12 +112,12 @@ model Roll {
 
 model Post {
   id          String    @id @default(cuid())
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   text        String?
   imageUrl    String?
   frameNumber Int?      // position within that day's roll, if a photo post on your roll
-  roll        Roll?     @relation(fields: [rollId], references: [id])
+  roll        Roll?     @relation(fields: [rollId], references: [id], onDelete: SetNull)
   rollId      String?
 
   // If this post belongs to a community instead of (or in addition to
@@ -124,7 +126,7 @@ model Post {
   // separate rules. A post always belongs to exactly one context: either
   // a roll frame (rollId set) or a community (communityId set), or neither
   // (a plain text post to your followers).
-  community   Community? @relation(fields: [communityId], references: [id])
+  community   Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
   communityId String?
 
   // Reels are vertical videos - they reuse the same Post row (and all of
@@ -161,7 +163,7 @@ model Post {
 // per slide (including the first), ordered by `position`.
 model PostImage {
   id       String @id @default(cuid())
-  post     Post   @relation(fields: [postId], references: [id])
+  post     Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId   String
   url      String
   position Int
@@ -175,7 +177,7 @@ model PostImage {
 // Roll's midnight rollover.
 model Story {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   imageUrl  String?
   videoUrl  String?
@@ -199,9 +201,9 @@ enum StoryAudience {
 
 model StoryView {
   id        String   @id @default(cuid())
-  story     Story    @relation(fields: [storyId], references: [id])
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
   storyId   String
-  viewer    User     @relation(fields: [viewerId], references: [id])
+  viewer    User     @relation(fields: [viewerId], references: [id], onDelete: Cascade)
   viewerId  String
   viewedAt  DateTime @default(now())
 
@@ -228,9 +230,9 @@ model Conversation {
 
 model ConversationParticipant {
   id             String       @id @default(cuid())
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
-  user           User         @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId         String
   lastReadAt     DateTime     @default(now())
 
@@ -240,9 +242,9 @@ model ConversationParticipant {
 
 model Message {
   id             String       @id @default(cuid())
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   conversationId String
-  sender         User         @relation(fields: [senderId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
   senderId       String
   text           String
   gifUrl         String?
@@ -252,7 +254,7 @@ model Message {
   // the same conversation. Nullable, no cascade delete: if the original
   // message is ever removed the reply just loses its quote, it isn't
   // deleted itself.
-  replyTo        Message?     @relation("MessageReplies", fields: [replyToId], references: [id])
+  replyTo        Message?     @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
   replyToId      String?
   replies        Message[]    @relation("MessageReplies")
 
@@ -267,9 +269,9 @@ model Message {
 // don't support multiple simultaneous reactions from the same person.
 model MessageReaction {
   id        String   @id @default(cuid())
-  message   Message  @relation(fields: [messageId], references: [id])
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
   messageId String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   emoji     String
   createdAt DateTime @default(now())
@@ -300,9 +302,9 @@ enum NotificationType {
 // PostImage slide the pin belongs to (0 for a single-image post).
 model PostTag {
   id         String   @id @default(cuid())
-  post       Post     @relation(fields: [postId], references: [id])
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId     String
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   x          Float?
   y          Float?
@@ -317,9 +319,9 @@ model PostTag {
 // Visible only to the saver, never shown as a public count or activity.
 model Saved {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   createdAt DateTime @default(now())
 
@@ -332,9 +334,9 @@ model Saved {
 // being in it doesn't imply anything back the other way.
 model CloseFriend {
   id        String   @id @default(cuid())
-  owner     User     @relation("CloseFriendOwner", fields: [ownerId], references: [id])
+  owner     User     @relation("CloseFriendOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId   String
-  friend    User     @relation("CloseFriendMember", fields: [friendId], references: [id])
+  friend    User     @relation("CloseFriendMember", fields: [friendId], references: [id], onDelete: Cascade)
   friendId  String
   createdAt DateTime @default(now())
 
@@ -350,14 +352,14 @@ model CloseFriend {
 // has no associated post.
 model Notification {
   id          String            @id @default(cuid())
-  recipient   User              @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  recipient   User              @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   recipientId String
-  actor       User              @relation("NotificationActor", fields: [actorId], references: [id])
+  actor       User              @relation("NotificationActor", fields: [actorId], references: [id], onDelete: Cascade)
   actorId     String
   type        NotificationType
   // Which hub this belongs to (social | connection | game | developer).
   hub         String            @default("social")
-  post        Post?             @relation(fields: [postId], references: [id])
+  post        Post?             @relation(fields: [postId], references: [id], onDelete: SetNull)
   postId      String?
   read        Boolean           @default(false)
   createdAt   DateTime          @default(now())
@@ -374,9 +376,9 @@ model Notification {
 // GET /api/feed. Resharing your own post is blocked at the API layer.
 model Reshare {
   id           String   @id @default(cuid())
-  post         Post     @relation(fields: [postId], references: [id])
+  post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId       String
-  resharedBy   User     @relation(fields: [resharedById], references: [id])
+  resharedBy   User     @relation(fields: [resharedById], references: [id], onDelete: Cascade)
   resharedById String
   comment      String?
   createdAt    DateTime @default(now())
@@ -401,9 +403,9 @@ model Community {
 
 model CommunityMembership {
   id          String    @id @default(cuid())
-  user        User      @relation(fields: [userId], references: [id])
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  community   Community @relation(fields: [communityId], references: [id])
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
   communityId String
   createdAt   DateTime  @default(now())
 
@@ -417,9 +419,9 @@ model CommunityMembership {
 // and GET /api/feed, both of which sort by createdAt only.
 model HelpfulMark {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   createdAt DateTime @default(now())
 
@@ -433,9 +435,9 @@ model HelpfulMark {
 // kept only for backward compatibility with any cached clients.
 model Like {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   createdAt DateTime @default(now())
 
@@ -445,9 +447,9 @@ model Like {
 
 model Comment {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   text      String
   createdAt DateTime @default(now())
@@ -462,9 +464,9 @@ model Comment {
 // and stops DMs/follows/comments between them (see src/lib/blocks.ts).
 model Block {
   id        String   @id @default(cuid())
-  blocker   User     @relation("BlockBlocker", fields: [blockerId], references: [id])
+  blocker   User     @relation("BlockBlocker", fields: [blockerId], references: [id], onDelete: Cascade)
   blockerId String
-  blocked   User     @relation("BlockBlocked", fields: [blockedId], references: [id])
+  blocked   User     @relation("BlockBlocked", fields: [blockedId], references: [id], onDelete: Cascade)
   blockedId String
   createdAt DateTime @default(now())
 
@@ -489,11 +491,11 @@ enum ReportStatus {
 // review it if the author deletes it (and so a reported DM is readable).
 model Report {
   id           String           @id @default(cuid())
-  reporter     User             @relation("ReportReporter", fields: [reporterId], references: [id])
+  reporter     User             @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
   reporterId   String
   targetType   ReportTargetType
   targetId     String
-  targetUser   User?            @relation("ReportTargetUser", fields: [targetUserId], references: [id])
+  targetUser   User?            @relation("ReportTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
   targetUserId String?
   reason       String
   note         String?
@@ -516,7 +518,7 @@ enum AuthTokenType {
 // Only the SHA-256 hash of the token is stored, never the token itself.
 model AuthToken {
   id        String        @id @default(cuid())
-  user      User          @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   type      AuthTokenType
   tokenHash String        @unique

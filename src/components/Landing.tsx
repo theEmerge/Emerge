@@ -124,7 +124,7 @@ export default function Landing() {
         <footer className={styles.footer}>
           <span>© 2026 {SITE_NAME}</span>
           <span>
-            <Link href="/login">Log in</Link> · <Link href="/register">Create account</Link>
+            <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link> · <Link href="/login">Log in</Link> · <Link href="/register">Create account</Link>
           </span>
         </footer>
       </div>
