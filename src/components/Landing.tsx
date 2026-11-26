@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import ThemeToggle from "./ThemeToggle";
 import { HUBS } from "@/lib/hubs";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import styles from "./Landing.module.css";
@@ -53,8 +54,10 @@ export default function Landing() {
             <Logo width={150} />
           </Link>
           <nav className={styles.nav} aria-label="Account">
+            <span className={styles.toggle}><ThemeToggle variant="icon" /></span>
             <Link href="/login" className={`${styles.btn} ${styles.btnGhost}`}>Log in</Link>
-            <Link href="/register" className={`${styles.btn} ${styles.btnPrimary}`}>Create account</Link>
+            {/* Hidden on phones, where the same button sits right under the headline. */}
+            <Link href="/register" className={`${styles.btn} ${styles.btnPrimary} ${styles.navCreate}`}>Create account</Link>
           </nav>
         </header>
 
