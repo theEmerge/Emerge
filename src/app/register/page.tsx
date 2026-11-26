@@ -54,9 +54,16 @@ export default function RegisterPage() {
         <input placeholder="Handle (no @)" value={handle} onChange={(e) => setHandle(e.target.value)} required />
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <label className="ap-auth-field-label" style={{ fontSize: 13, textAlign: "left" }}>
-          Date of birth (you must be 18 or over; we don&apos;t save it)
-          <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} max={new Date().toISOString().slice(0, 10)} required />
+        <label style={{ display: "flex", flexDirection: "column", gap: 6, textAlign: "left", fontSize: 13, fontWeight: 600 }}>
+          Date of birth
+          <input
+            type="date"
+            value={dob}
+            onChange={(e) => setDob(e.target.value)}
+            max={new Date().toISOString().slice(0, 10)}
+            required
+            style={{ width: "100%", boxSizing: "border-box", fontWeight: 400 }}
+          />
         </label>
         <label style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, textAlign: "left" }}>
           <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} required style={{ width: "auto", marginTop: 3 }} />
