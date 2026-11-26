@@ -63,10 +63,6 @@ export default function HubShell({
 
   return (
     <div className={`hd-app hd-theme-${meta.theme}`}>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Space+Mono:wght@400;700&display=swap" />
-
       <aside className="hd-sidebar">
         <Brand />
         <div className="hd-hub-switcher">

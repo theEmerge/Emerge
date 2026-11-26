@@ -169,14 +169,14 @@ html[data-theme="dark"] .hd-theme-social::before {
   box-shadow: 0 18px 44px rgb(255 93 59 / 24%);
 }
 .hd-trend-card .hd-eyebrow { color: rgb(255 255 255 / 75%); }
-.hd-trend-card h3 { margin: 6px 0 4px; font-family: "Manrope", sans-serif; font-size: 20px; letter-spacing: -.04em; }
+.hd-trend-card h3 { margin: 6px 0 4px; font-family: var(--font-display), sans-serif; font-size: 20px; letter-spacing: -.04em; }
 .hd-trend-card p { margin: 0; color: rgb(255 255 255 / 82%); font-size: 12px; line-height: 1.5; }
 .hd-trend-card button { margin-top: 14px; border: 0; border-radius: 10px; background: #fff; padding: 9px 13px; color: #b8321e; font-size: 11px; font-weight: 800; }
 .hd-community-row { display: flex; align-items: center; gap: 11px; border-top: 1px solid var(--line); padding: 11px 0; }
 .hd-community-row:first-of-type { border-top: 0; }
 .hd-community-badge {
   display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; border-radius: 11px;
-  background: var(--accent-soft); color: var(--accent); font-family: "Manrope", sans-serif; font-size: 13px; font-weight: 800;
+  background: var(--accent-soft); color: var(--accent); font-family: var(--font-display), sans-serif; font-size: 13px; font-weight: 800;
 }
 .hd-community-row div { display: flex; min-width: 0; flex: 1; flex-direction: column; }
 .hd-community-row strong { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
@@ -187,7 +187,7 @@ html[data-theme="dark"] .hd-theme-social::before {
 .hd-theme-social .hd-hub-content > .ap-shell,
 .hd-theme-social .hd-hub-content > .ig-reels-shell { margin-right: auto; margin-left: auto; padding-top: 22px; }
 .hd-theme-social .hd-hub-content > .ap-shell { padding-right: 0; padding-left: 0; }
-.hd-theme-social .feed-greeting h1 { font-family: "Manrope", sans-serif; letter-spacing: -.04em; }
+.hd-theme-social .feed-greeting h1 { font-family: var(--font-display), sans-serif; letter-spacing: -.04em; }
 .hd-theme-social .ap-rail-card, .hd-theme-social .ap-people { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); }
 .hd-theme-social .ig-create-btn { border-radius: 12px; }
 
