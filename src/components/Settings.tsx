@@ -9,6 +9,7 @@ import ThemeToggle from "./ThemeToggle";
 import PostGrid, { PostLightbox, GridPost } from "./PostGrid";
 import { GridSkeleton } from "./Skeletons";
 import BlockedAccounts from "./BlockedAccounts";
+import AccountData from "./AccountData";
 
 type StoryRow = {
   id: string;
@@ -100,6 +101,8 @@ export default function Settings() {
         </div>
 
         <BlockedAccounts />
+
+        <AccountData />
 
         <h2 className="ig-settings-h2">Your activity</h2>
         <p className="ig-page-sub">Only you can see this.</p>

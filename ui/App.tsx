@@ -277,7 +277,7 @@ export default function App() {
             <button className="mt-5 text-xs font-bold text-white">Explore the topic →</button>
           </div>
           <footer className="mt-6 text-[11px] leading-5 text-[#99978f]">
-            About · Help · Privacy · Terms · Language<br />© 2026 Emect Social
+            Privacy · Terms<br />© 2026 Emect Social
           </footer>
         </aside>
       </main>

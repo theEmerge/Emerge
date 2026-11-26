@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { passwordProblem } from "@/lib/password";
+import { ageFromDob, MIN_AGE } from "@/lib/age";
 
 // Handles become URLs (/u/<handle>), so they're restricted to a safe alphabet
 // and can't impersonate site routes or staff.
@@ -15,11 +16,17 @@ const RESERVED = new Set([
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const { email, password, name, handle } = body as Record<string, unknown>;
+  const { email, password, name, handle, dob, acceptTerms } = body as Record<string, unknown>;
 
   if (typeof email !== "string" || typeof password !== "string" || typeof name !== "string" || typeof handle !== "string" || !email || !password || !name || !handle) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
+
+  // Age gate and consent. The date of birth is used for this check only and is not saved.
+  const age = typeof dob === "string" ? ageFromDob(dob) : null;
+  if (age === null) return NextResponse.json({ error: "invalid_dob" }, { status: 400 });
+  if (age < MIN_AGE) return NextResponse.json({ error: "too_young" }, { status: 403 });
+  if (acceptTerms !== true) return NextResponse.json({ error: "terms_required" }, { status: 400 });
 
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.replace(/\s+/g, " ").trim();
@@ -48,7 +55,7 @@ export async function POST(req: Request) {
   const passwordHash = await bcrypt.hash(password, 10);
   try {
     const user = await prisma.user.create({
-      data: { email: cleanEmail, passwordHash, name: cleanName, handle: cleanHandle },
+      data: { email: cleanEmail, passwordHash, name: cleanName, handle: cleanHandle, termsAcceptedAt: new Date() },
     });
     // The OTP code is sent when they log in, so nothing to email here.
     return NextResponse.json({ id: user.id, email: user.email, handle: user.handle });

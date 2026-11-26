@@ -677,7 +677,7 @@ export default function Feed() {
             </div>
           )}
 
-          <footer className="hd-rail-footer">About · Help · Privacy · Terms<br />© 2026 Emect</footer>
+          <footer className="hd-rail-footer"><Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link><br />© 2026 Emect</footer>
         </aside>
       </section>
 
