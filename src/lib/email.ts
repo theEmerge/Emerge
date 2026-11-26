@@ -1,5 +1,5 @@
 // Sends email. Order of preference:
-//  1. Gmail SMTP  - set GMAIL_USER (theemergeweb@gmail.com) and GMAIL_APP_PASSWORD
+//  1. Gmail SMTP  - set GMAIL_USER (emectapp@gmail.com) and GMAIL_APP_PASSWORD
 //     (a 16-character Google "App password", NOT the normal account password).
 //  2. Resend      - set RESEND_API_KEY and EMAIL_FROM (needs a domain you verified).
 //  3. Neither set - the email is only printed to the server log (local dev).
