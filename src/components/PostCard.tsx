@@ -164,7 +164,7 @@ function PostCard({ post, meId, priority, onLike, onSave, onReshare, onDelete, o
           <HeartBurst n={burst} />
           <Image
             src={post.images[slide] || post.images[0]}
-            alt="post"
+            alt={post.text ? `Photo by ${post.user.name}: ${post.text.slice(0, 100)}` : `Photo by ${post.user.name}`}
             width={1200}
             height={900}
             sizes="(max-width: 700px) 100vw, 700px"

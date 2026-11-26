@@ -1,9 +1,10 @@
 import "./globals.css";
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, Manrope } from "next/font/google";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Providers from "./providers";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_OG_IMAGE, SITE_TITLE, SITE_URL } from "@/lib/site";
 
 // Self-hosted by next/font at build time: no render-blocking request to
 // fonts.googleapis.com, no layout shift (size-adjusted fallback), and only
@@ -19,9 +20,19 @@ export const viewport: Viewport = {
   ],
 };
 
-export const metadata = {
-  title: "Emect",
-  description: "A chronological, algorithm-free photo network with topic communities.",
+// Site-wide defaults. Pages are NOT indexed unless they opt in (the front page
+// and /register do), so a new private page can never leak into Google by accident.
+// Titles read "<page> | Emect"; the front page sets its own full title.
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_TITLE, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  robots: { index: false, follow: false },
+  openGraph: { type: "website", siteName: SITE_NAME, locale: "en_US", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [SITE_OG_IMAGE] },
+  twitter: { card: "summary_large_image", title: SITE_TITLE, description: SITE_DESCRIPTION, images: [SITE_OG_IMAGE.url] },
+  // Set GOOGLE_SITE_VERIFICATION in Netlify to the token Search Console gives you.
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
 };
 
 // Sets data-theme on <html> before the page paints, from localStorage or

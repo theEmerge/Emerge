@@ -100,3 +100,12 @@ Contributions are welcome. Please open an issue to discuss larger changes before
 ## License
 
 > **TODO:** Add a license (e.g. MIT) and a `LICENSE` file.
+
+## SEO
+
+Only the front page (`/`) and `/register` are public, so only those are indexed. Everything else is `noindex` by default (see `src/app/layout.tsx`); a new page has to opt in.
+
+- `src/lib/site.ts` holds the site URL, title, description and share image. It uses `https://emect.netlify.app` unless `NEXT_PUBLIC_SITE_URL` is set (use that for a custom domain).
+- `src/app/robots.ts`, `sitemap.ts` and `manifest.ts` generate `/robots.txt`, `/sitemap.xml` and the web manifest. Add new public pages to `sitemap.ts` and to the `allow` list in `robots.ts`.
+- `src/components/Landing.tsx` is the logged-out front page, with the FAQ and JSON-LD structured data.
+- To verify with Google Search Console, set `GOOGLE_SITE_VERIFICATION` in Netlify to the token it gives you.

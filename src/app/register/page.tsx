@@ -44,7 +44,7 @@ export default function RegisterPage() {
       <div className="ig-auth-theme-toggle"><ThemeToggle variant="icon" /></div>
       <form onSubmit={handleSubmit} className="ap-auth-card">
         <Logo width={200} className="ap-auth-logo" priority />
-        <p className="ap-auth-sub">Create an account</p>
+        <h1 className="ap-auth-sub" style={{ fontWeight: 400 }}>Create an account</h1>
         <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <input placeholder="Handle (no @)" value={handle} onChange={(e) => setHandle(e.target.value)} required />
         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />

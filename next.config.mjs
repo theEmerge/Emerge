@@ -49,7 +49,7 @@ const nextConfig = {
       // API responses carry private data: never let a shared cache keep them.
       {
         source: "/api/:path*",
-        headers: [{ key: "Cache-Control", value: "no-store" }],
+        headers: [{ key: "Cache-Control", value: "no-store" }, { key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
     ];
   },
