@@ -15,6 +15,37 @@ function getClientIp(req: NextRequest): string {
   );
 }
 
+// --- Cached front page --------------------------------------------------
+// "/" is the public front page for visitors without a login cookie and the
+// feed for members. The layout reads the session, so Next renders it on every
+// request. For logged-out visitors the result is identical every time, so we
+// let Netlify's CDN keep a copy and answer from a nearby edge instead of
+// running a function in another continent.
+//
+// Safety: the copy is keyed on the login cookie (Netlify-Vary). A request that
+// carries a session cookie never matches the logged-out copy, and a response
+// for a logged-in user is never marked cacheable. Both the plain and the
+// chunked (.0/.1) cookie names are listed, because large tokens are split.
+// To switch this off without a code change, set LANDING_CACHE=off in Netlify.
+const SESSION_COOKIES = [
+  "next-auth.session-token",
+  "__Secure-next-auth.session-token",
+];
+const VARY_COOKIES = SESSION_COOKIES.flatMap((n) => [n, `${n}.0`, `${n}.1`, `${n}.2`]).join("|");
+
+function hasSessionCookie(req: NextRequest): boolean {
+  return req.cookies.getAll().some((c) => SESSION_COOKIES.some((n) => c.name.startsWith(n)));
+}
+
+function frontPage(req: NextRequest): NextResponse {
+  const res = NextResponse.next();
+  res.headers.set("Netlify-Vary", `cookie=${VARY_COOKIES}`);
+  if (req.method === "GET" && !hasSessionCookie(req) && process.env.LANDING_CACHE !== "off") {
+    res.headers.set("Netlify-CDN-Cache-Control", "public, durable, s-maxage=600, stale-while-revalidate=86400");
+  }
+  return res;
+}
+
 // IP-based rate limiting, now only where it protects something:
 //  - login/register (brute-force) and
 //  - writes (POST/PUT/PATCH/DELETE).
@@ -24,6 +55,7 @@ function getClientIp(req: NextRequest): string {
 // routes still layer per-user limits on top.
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
+  if (path === "/") return frontPage(req);
   const isAuthAttempt =
     (path.startsWith("/api/auth/callback") || path.startsWith("/api/register") || path.startsWith("/api/password")) &&
     req.method !== "GET";
@@ -41,5 +73,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: "/api/:path*",
+  matcher: ["/", "/api/:path*"],
 };
